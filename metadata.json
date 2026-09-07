@@ -1,0 +1,6 @@
+{
+  "name": "دانشگاه جامع علمی کاربردی کوثر کاکی",
+  "description": "پورتال رسمی و خبری مرکز آموزش علمی کاربردی کوثر کاکی",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

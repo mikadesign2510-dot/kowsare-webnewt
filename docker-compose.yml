@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kowsar-portal-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET:-kowsar_university_secure_jwt_secret_2026}
+      - APP_URL=${APP_URL:-http://localhost:3000}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - uploads_data:/app/uploads
+
+volumes:
+  uploads_data:
+    driver: local

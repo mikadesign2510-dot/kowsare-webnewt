@@ -1,0 +1,336 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "Vazirmatn", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+  color: #0f172a;
+  overflow-x: hidden;
+}
+
+@keyframes marquee-seamless {
+
+  0% {
+
+    transform: translateX(0);
+
+  }
+
+  100% {
+
+    transform: translateX(-50%);
+
+  }
+
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ========================================================================= */
+/* ADMIN PANEL FULL-THEME STYLES (DARK, NAVY, EMERALD) */
+/* ========================================================================= */
+
+/* --- DARK THEME --- */
+.admin-theme-dark {
+  background-color: #0b0f19 !important;
+  color: #f3f4f6 !important;
+}
+.admin-theme-dark .bg-white {
+  background-color: #111827 !important;
+  border-color: #1f2937 !important;
+  color: #f3f4f6 !important;
+}
+.admin-theme-dark .bg-slate-50,
+.admin-theme-dark .bg-slate-100,
+.admin-theme-dark .bg-gray-50,
+.admin-theme-dark .bg-gray-100 {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+.admin-theme-dark .text-slate-900,
+.admin-theme-dark .text-slate-800,
+.admin-theme-dark .text-slate-700,
+.admin-theme-dark .text-gray-900,
+.admin-theme-dark .text-gray-800 {
+  color: #f8fafc !important;
+}
+.admin-theme-dark .text-slate-600,
+.admin-theme-dark .text-slate-500,
+.admin-theme-dark .text-slate-400,
+.admin-theme-dark .text-gray-600,
+.admin-theme-dark .text-gray-500 {
+  color: #94a3b8 !important;
+}
+.admin-theme-dark .border-slate-100,
+.admin-theme-dark .border-slate-200,
+.admin-theme-dark .border-slate-300,
+.admin-theme-dark .border-gray-100,
+.admin-theme-dark .border-gray-200 {
+  border-color: #1f2937 !important;
+}
+.admin-theme-dark input:not([type="checkbox"]):not([type="radio"]),
+.admin-theme-dark select,
+.admin-theme-dark textarea {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #f9fafb !important;
+}
+.admin-theme-dark input::placeholder,
+.admin-theme-dark textarea::placeholder {
+  color: #64748b !important;
+}
+.admin-theme-dark thead,
+.admin-theme-dark th {
+  background-color: #0f172a !important;
+  color: #94a3b8 !important;
+  border-color: #1f2937 !important;
+}
+.admin-theme-dark tr {
+  border-color: #1f2937 !important;
+}
+.admin-theme-dark tr:hover td {
+  background-color: #1e293b !important;
+}
+
+/* --- NAVY THEME --- */
+.admin-theme-navy {
+  background-color: #060b17 !important;
+  color: #f8fafc !important;
+}
+.admin-theme-navy .bg-white {
+  background-color: #0d1527 !important;
+  border-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+.admin-theme-navy .bg-slate-50,
+.admin-theme-navy .bg-slate-100,
+.admin-theme-navy .bg-gray-50,
+.admin-theme-navy .bg-gray-100 {
+  background-color: #131e36 !important;
+  border-color: #1e3a5f !important;
+  color: #cbd5e1 !important;
+}
+.admin-theme-navy .text-slate-900,
+.admin-theme-navy .text-slate-800,
+.admin-theme-navy .text-slate-700,
+.admin-theme-navy .text-gray-900,
+.admin-theme-navy .text-gray-800 {
+  color: #ffffff !important;
+}
+.admin-theme-navy .text-slate-600,
+.admin-theme-navy .text-slate-500,
+.admin-theme-navy .text-slate-400,
+.admin-theme-navy .text-gray-600,
+.admin-theme-navy .text-gray-500 {
+  color: #93c5fd !important;
+}
+.admin-theme-navy .border-slate-100,
+.admin-theme-navy .border-slate-200,
+.admin-theme-navy .border-slate-300,
+.admin-theme-navy .border-gray-100,
+.admin-theme-navy .border-gray-200 {
+  border-color: #172544 !important;
+}
+.admin-theme-navy input:not([type="checkbox"]):not([type="radio"]),
+.admin-theme-navy select,
+.admin-theme-navy textarea {
+  background-color: #131e36 !important;
+  border-color: #1e3a5f !important;
+  color: #f8fafc !important;
+}
+.admin-theme-navy input::placeholder,
+.admin-theme-navy textarea::placeholder {
+  color: #60a5fa !important;
+}
+.admin-theme-navy thead,
+.admin-theme-navy th {
+  background-color: #091020 !important;
+  color: #93c5fd !important;
+  border-color: #172544 !important;
+}
+.admin-theme-navy tr {
+  border-color: #172544 !important;
+}
+.admin-theme-navy tr:hover td {
+  background-color: #131e36 !important;
+}
+
+/* --- EMERALD THEME --- */
+.admin-theme-emerald {
+  background-color: #031410 !important;
+  color: #f0fdf4 !important;
+}
+.admin-theme-emerald .bg-white {
+  background-color: #06231c !important;
+  border-color: #0d3d32 !important;
+  color: #f0fdf4 !important;
+}
+.admin-theme-emerald .bg-slate-50,
+.admin-theme-emerald .bg-slate-100,
+.admin-theme-emerald .bg-gray-50,
+.admin-theme-emerald .bg-gray-100 {
+  background-color: #092e26 !important;
+  border-color: #114e40 !important;
+  color: #a7f3d0 !important;
+}
+.admin-theme-emerald .text-slate-900,
+.admin-theme-emerald .text-slate-800,
+.admin-theme-emerald .text-slate-700,
+.admin-theme-emerald .text-gray-900,
+.admin-theme-emerald .text-gray-800 {
+  color: #ffffff !important;
+}
+.admin-theme-emerald .text-slate-600,
+.admin-theme-emerald .text-slate-500,
+.admin-theme-emerald .text-slate-400,
+.admin-theme-emerald .text-gray-600,
+.admin-theme-emerald .text-gray-500 {
+  color: #6ee7b7 !important;
+}
+.admin-theme-emerald .border-slate-100,
+.admin-theme-emerald .border-slate-200,
+.admin-theme-emerald .border-slate-300,
+.admin-theme-emerald .border-gray-100,
+.admin-theme-emerald .border-gray-200 {
+  border-color: #0d3d32 !important;
+}
+.admin-theme-emerald input:not([type="checkbox"]):not([type="radio"]),
+.admin-theme-emerald select,
+.admin-theme-emerald textarea {
+  background-color: #092e26 !important;
+  border-color: #114e40 !important;
+  color: #f0fdf4 !important;
+}
+.admin-theme-emerald input::placeholder,
+.admin-theme-emerald textarea::placeholder {
+  color: #34d399 !important;
+}
+.admin-theme-emerald thead,
+.admin-theme-emerald th {
+  background-color: #041a15 !important;
+  color: #6ee7b7 !important;
+  border-color: #0d3d32 !important;
+}
+.admin-theme-emerald tr {
+  border-color: #0d3d32 !important;
+}
+.admin-theme-emerald tr:hover td {
+  background-color: #092e26 !important;
+}
+
+/* --- LIGHT THEME --- */
+.admin-theme-light {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Custom scrollbar for admin sidebar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+/* ========================================================================= */
+/* MOBILE TEXT WRITING BOXES OPTIMIZATION (PANEL ADMIN) */
+/* ========================================================================= */
+
+@media (max-width: 640px) {
+  /* Prevent iOS automatic zooming on focus while keeping Persian font readable */
+  input:not([type="checkbox"]):not([type="radio"]),
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  select,
+  textarea,
+  [contenteditable="true"] {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+    touch-action: manipulation;
+  }
+
+  /* Admin textarea mobile sizing & scrolling */
+  textarea {
+    min-height: 76px;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-top: 0.625rem !important;
+    padding-bottom: 0.625rem !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    word-break: break-word;
+  }
+
+  /* Admin rich text contentEditable area on mobile */
+  [contenteditable="true"] {
+    min-height: 140px;
+    max-height: 350px;
+    padding: 0.75rem !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    word-break: break-word;
+  }
+
+  /* Ensure modal forms with textareas allow smooth scrolling without being cut off */
+  .admin-modal-body,
+  form.admin-form {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+

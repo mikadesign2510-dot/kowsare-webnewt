@@ -1,0 +1,333 @@
+{
+  "site_settings": [
+    {
+      "id": 1,
+      "settings": {
+        "site_title": "مرکز آموزش علمی کاربردی کوثر کاکی",
+        "site_subtitle": "وابسته به دانشگاه جامع علمی کاربردی",
+        "logo_url": "",
+        "phone": "۰۷۷-۳۵۳۲۰۰۰۰",
+        "email": "info@kowsar.ac.ir",
+        "address": "بوشهر، کاکی، دانشگاه جامع علمی کاربردی مرکز کوثر کاکی",
+        "working_hours": "شنبه تا چهارشنبه ۸:۰۰ الی ۱۵:۰۰",
+        "hero_title": "آینده تحصیلی و شغلی خود را با مهارت‌آموزی بسازید",
+        "hero_subtitle": "پذیرش دانشجو در مقاطع کاردانی و کارشناسی بدون کنکور بر اساس سوابق تحصیلی",
+        "hero_cta_text": "پیش‌ثبت‌نام آنلاین",
+        "hero_cta_link": "/register",
+        "announcement_text": "ثبت‌نام و پذیرش دوره‌های کاردانی و کارشناسی آغاز شد.",
+        "announcement_active": true,
+        "social_links": {
+          "telegram": "https://t.me/kowsar_ac",
+          "eitaa": "https://eitaa.com/kowsar_ac",
+          "instagram": "https://instagram.com/kowsar_ac",
+          "bale": "https://ble.ir/kowsar_ac"
+        }
+      },
+      "updated_at": "2026-09-07T05:34:52.903Z"
+    },
+    {
+      "id": 2,
+      "settings": {
+        "portal_name": "سامانه یکپارچه دانشجویی کوثر",
+        "academic_term": "نیم‌سال اول ۱۴۰۳ - ۱۴۰۴",
+        "registration_active": true,
+        "course_selection_active": false,
+        "tuition_payment_active": true,
+        "exam_schedule_active": false,
+        "support_phone": "۰۷۷-۳۵۳۲۰۰۰۱",
+        "telegram_channel": "https://t.me/kowsar_students"
+      },
+      "updated_at": "2026-09-07T05:34:52.903Z"
+    }
+  ],
+  "presentation_sections": [
+    {
+      "id": "intro-1",
+      "order": 1,
+      "title": "مرکز آموزش علمی کاربردی کوثر کاکی",
+      "subtitle": "پیشرو در آموزش مهارت‌محور",
+      "content": "محیطی پویا و نوین برای ارتقای دانش و مهارت‌های کاربردی، تربیت نیروهای متخصص و کارآفرین برای ورود مقتدرانه به بازار کار.",
+      "image": "https://picsum.photos/seed/7733/1200/800",
+      "icon": "",
+      "animation_style": "zoom",
+      "image_animation_style": "rotate-3d",
+      "frame_style": "floating-isometric",
+      "frame_accent_color": "",
+      "frame_badge_text": "دانشگاه علمی کاربردی کوثر",
+      "show_overlay_text": true,
+      "overlay_subtitle": "",
+      "overlay_position": "top-right",
+      "overlay_style": "badge",
+      "animation_duration": 0.8,
+      "animation_easing": "easeOut",
+      "theme": "primary",
+      "is_visible": true,
+      "image_position": "left",
+      "text_alignment": "right",
+      "created_at": "2026-09-07T05:34:52.903Z",
+      "updated_at": "2026-09-07T05:34:52.903Z"
+    },
+    {
+      "id": "intro-2",
+      "order": 2,
+      "title": "ارتباط مستقیم با صنعت و بازار کار",
+      "subtitle": "ورود مطمئن به بازار کار",
+      "content": "برنامه‌های درسی همگام با نیازهای بازار کار، کارگاه‌ها و آزمایشگاه‌های مجهز و اساتید مجرب و کارآفرین.",
+      "image": "https://picsum.photos/seed/7587/1200/800",
+      "icon": "",
+      "animation_style": "slide-right",
+      "image_animation_style": "flip-3d",
+      "frame_style": "golden-gallery",
+      "frame_accent_color": "",
+      "frame_badge_text": "مهارت و اشتغال پایدار",
+      "show_overlay_text": true,
+      "overlay_subtitle": "",
+      "overlay_position": "top-right",
+      "overlay_style": "badge",
+      "animation_duration": 0.8,
+      "animation_easing": "easeOut",
+      "theme": "light",
+      "is_visible": true,
+      "image_position": "left",
+      "text_alignment": "right",
+      "created_at": "2026-09-07T05:34:52.903Z",
+      "updated_at": "2026-09-07T05:34:52.903Z"
+    }
+  ],
+  "news": [
+    {
+      "id": 1,
+      "title": "آغاز ثبت‌نام دوره‌های کاردانی و کارشناسی ترم جدید",
+      "subtitle": "پذیرش بر اساس سوابق تحصیلی",
+      "date": "۱۵ مهر ۱۴۰۳",
+      "image": "https://picsum.photos/seed/7569/1200/800",
+      "summary": "ثبت‌نام بدون کنکور در رشته‌های متنوع مهارتی و کاربردی آغاز شد.",
+      "content": "با حمد و سپاس به درگاه خداوند متعال، به اطلاع تمامی علاقه‌مندان به تحصیل در مقاطع کاردانی و کارشناسی می‌رساند که ثبت‌نام ترم جدید مرکز آموزش علمی کاربردی کوثر کاکی آغاز شده است.",
+      "category": "آموزشی",
+      "priority": 1,
+      "is_pinned": true,
+      "is_published": true,
+      "author": "روابط عمومی مرکز",
+      "views": 1420,
+      "tags": [
+        "ثبت_نام",
+        "کاردانی",
+        "کارشناسی"
+      ],
+      "attachments": [],
+      "gallery": [],
+      "read_time": "۳ دقیقه",
+      "created_at": "2026-09-07T05:34:52.903Z",
+      "updated_at": "2026-09-07T05:34:52.903Z"
+    },
+    {
+      "id": 2,
+      "title": "برگزاری همایش کارآفرینی و مهارت‌آموزی",
+      "subtitle": "ویژه دانشجویان و فارغ‌التحصیلان",
+      "date": "۱۰ آبان ۱۴۰۳",
+      "image": "https://picsum.photos/seed/7625/1200/800",
+      "summary": "این همایش با حضور اساتید برجسته و کارآفرینان موفق منطقه در سالن آمفی‌تئاتر مرکز برگزار خواهد شد.",
+      "content": "در راستای تحقق اهداف دانشگاه جامع علمی کاربردی مبنی بر تربیت نیروی متخصص و کارآفرین، همایش بزرگ «کارآفرینی و مهارت‌آموزی در عصر دیجیتال» در مرکز کوثر کاکی برگزار می‌شود.",
+      "category": "رویدادها",
+      "priority": 2,
+      "is_pinned": false,
+      "is_published": true,
+      "author": "واحد پژوهش و کارآفرینی",
+      "views": 890,
+      "tags": [
+        "کارآفرینی",
+        "مهارت"
+      ],
+      "attachments": [],
+      "gallery": [],
+      "read_time": "۴ دقیقه",
+      "created_at": "2026-09-07T05:34:52.903Z",
+      "updated_at": "2026-09-07T05:34:52.903Z"
+    }
+  ],
+  "banners": [
+    {
+      "id": "1",
+      "image_url": "https://picsum.photos/seed/7605/1200/800",
+      "title": "محیط پویای یادگیری و مهارت‌آموزی",
+      "subtitle": "دانشگاه جامع علمی کاربردی مرکز کوثر کاکی",
+      "link": "/register",
+      "show_button": true,
+      "button_text": "مشاهده جزئیات",
+      "order": 1,
+      "is_active": true,
+      "duration": 5,
+      "created_at": "1403/01/01"
+    },
+    {
+      "id": "2",
+      "image_url": "https://picsum.photos/seed/7732/1200/800",
+      "title": "پیشگام در مهارت‌های شغلی و آینده‌ساز",
+      "subtitle": "پذیرش دانشجو در مقاطع کاردانی و کارشناسی بدون کنکور",
+      "link": "/register",
+      "show_button": true,
+      "button_text": "مشاهده جزئیات",
+      "order": 2,
+      "is_active": true,
+      "duration": 5,
+      "created_at": "1403/01/01"
+    }
+  ],
+  "forms": [
+    {
+      "id": "form-1",
+      "code": "EDU-101",
+      "title": "فرم ثبت‌نام و پذیرش دانشجویان جدیدالورود",
+      "description": "فرم جامع اطلاعات هویتی و تحصیلی پذیرفته‌شدگان دوره‌های کاردانی و کارشناسی ناپیوسته.",
+      "category": "آموزشی و تحصیلی",
+      "department": "اداره آموزش و پذیرش",
+      "file_format": "PDF",
+      "file_size": "۱.۴ مگابایت",
+      "file_url": "https://example.com/forms/registration-form.pdf",
+      "download_count": 428,
+      "is_published": true,
+      "is_pinned": true,
+      "priority": 1,
+      "created_at": "1403/01/10",
+      "updated_at": "1403/07/15",
+      "tags": [
+        "ثبت‌نام",
+        "ورودی_جدید",
+        "پذیرش"
+      ],
+      "instructions": [
+        "تکمیل تمامی فیلدهای فرم"
+      ],
+      "required_attachments": [
+        "کپی شناسنامه و کارت ملی"
+      ],
+      "item_type": "form"
+    },
+    {
+      "id": "form-2",
+      "code": "FIN-201",
+      "title": "فرم درخواست وام شهریه دانشجویی صندوق رفاه",
+      "description": "فرم تقاضای دریافت تسهیلات شهریه با کارمزد پایین و بازپرداخت پس از فراغت از تحصیل.",
+      "category": "مالی و رفاهی",
+      "department": "امور مالی و صندوق رفاه",
+      "file_format": "PDF",
+      "file_size": "۲.۱ مگابایت",
+      "file_url": "https://example.com/forms/student-loan.pdf",
+      "download_count": 382,
+      "is_published": true,
+      "is_pinned": true,
+      "priority": 2,
+      "created_at": "1403/02/15",
+      "updated_at": "1403/08/01",
+      "tags": [
+        "وام",
+        "صندوق_رفاه"
+      ],
+      "instructions": [
+        "افتتاح حساب در سامانه یکپارچه"
+      ],
+      "required_attachments": [
+        "تصویر کارت دانشجویی"
+      ],
+      "item_type": "form"
+    }
+  ],
+  "gallery_albums": [
+    {
+      "id": "album-1",
+      "title": "فضای آموزشی و کارگاه‌ها",
+      "description": "تصاویر کارگاه‌ها، آزمایشگاه‌ها و فضاهای عمومی دانشگاه",
+      "cover_image": "https://picsum.photos/seed/7733/800/600",
+      "image_count": 1,
+      "created_at": "1403/01/01",
+      "updated_at": "1403/01/01"
+    }
+  ],
+  "gallery_images": [
+    {
+      "id": "img-1",
+      "album_id": "album-1",
+      "title": "کارگاه شبکه‌های کامپیوتری",
+      "url": "https://picsum.photos/seed/7733/800/600",
+      "created_at": "1403/01/01"
+    }
+  ],
+  "users": [
+    {
+      "id": "admin-main-elmi",
+      "name": "مدیر اصلی سامانه",
+      "first_name": "مدیر اصلی",
+      "last_name": "سامانه",
+      "national_id": "3540143041",
+      "mobile": "09170000000",
+      "raw_password": "M3540143041m@",
+      "permissions": [
+        "dashboard",
+        "manage_students",
+        "manage_student_profiles",
+        "manage_tickets",
+        "manage_financial",
+        "manage_portal_settings",
+        "manage_panel_settings",
+        "manage_registrations",
+        "manage_news",
+        "manage_presentation",
+        "manage_banners",
+        "manage_gallery",
+        "manage_forms",
+        "manage_settings",
+        "manage_users",
+        "manage_server_monitoring",
+        "view_logs",
+        "view_security_logs"
+      ],
+      "email": "elmi_admin",
+      "password_hash": "$2b$10$jx3U6hQ2YXFUcJY.h6Z83ee1MA8Ry4K5ahj9o8IsOmKq5JcJlqVNy",
+      "role": "super_admin",
+      "created_at": "2026-09-07T05:34:52.903Z",
+      "updated_at": "2026-09-07T05:34:52.903Z"
+    },
+    {
+      "id": "admin-main-elmi-email",
+      "name": "مدیر اصلی سامانه",
+      "first_name": "مدیر اصلی",
+      "last_name": "سامانه",
+      "national_id": "3540143041",
+      "mobile": "09170000000",
+      "raw_password": "M3540143041m@",
+      "permissions": [
+        "dashboard",
+        "manage_students",
+        "manage_student_profiles",
+        "manage_tickets",
+        "manage_financial",
+        "manage_portal_settings",
+        "manage_panel_settings",
+        "manage_registrations",
+        "manage_news",
+        "manage_presentation",
+        "manage_banners",
+        "manage_gallery",
+        "manage_forms",
+        "manage_settings",
+        "manage_users",
+        "manage_server_monitoring",
+        "view_logs",
+        "view_security_logs"
+      ],
+      "email": "elmi_admin@kowsar.ac.ir",
+      "password_hash": "$2b$10$jx3U6hQ2YXFUcJY.h6Z83ee1MA8Ry4K5ahj9o8IsOmKq5JcJlqVNy",
+      "role": "super_admin",
+      "created_at": "2026-09-07T05:34:52.903Z",
+      "updated_at": "2026-09-07T05:34:52.903Z"
+    }
+  ],
+  "students": [],
+  "registrations": [],
+  "tickets": [],
+  "financial_receipts": [],
+  "contact_messages": [],
+  "system_logs": [],
+  "security_logs": [],
+  "uploaded_files": []
+}
