@@ -63,12 +63,6 @@ export default function AdminLayout() {
   const [remainingSeconds, setRemainingSeconds] = useState<number>(() => Math.ceil(getRemainingSessionMs() / 1000));
   const [showWarningModal, setShowWarningModal] = useState<boolean>(false);
 
-  const formatRemainingTime = (totalSec: number) => {
-    const m = Math.floor(Math.max(0, totalSec) / 60);
-    const s = Math.max(0, totalSec) % 60;
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
-  };
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [panelConfig, setPanelConfig] = useState<AdminPanelConfig>(defaultPanelConfig);
   const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
@@ -468,22 +462,6 @@ export default function AdminLayout() {
                     <span>مشاهده سایت</span>
                   </Link>
 
-                  {/* نشانگر زمان باقی‌مانده نشست و تمدید */}
-                  <button
-                    type="button"
-                    onClick={handleExtendSession}
-                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all ${
-                      remainingSeconds <= 60
-                        ? 'bg-rose-50 text-rose-700 border-rose-300 animate-pulse'
-                        : `${activeTheme.userBox} hover:border-blue-400`
-                    }`}
-                    title="زمان باقی‌مانده تا خروج خودکار به دلیل عدم فعالیت (برای تمدید کلیک کنید)"
-                  >
-                    <Clock className={`w-3.5 h-3.5 ${remainingSeconds <= 60 ? 'text-rose-600' : 'text-amber-500'}`} />
-                    <span className="font-mono text-xs">{formatRemainingTime(remainingSeconds)}</span>
-                    <RefreshCw className="w-3 h-3 opacity-60 hover:opacity-100 hover:rotate-180 transition-transform" />
-                  </button>
-
                   <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold ${activeTheme.userBox}`}>
                     <span className="truncate max-w-[120px]">{currentUser.name}</span>
                     <span className="text-[10px] opacity-75 font-normal">
@@ -782,22 +760,6 @@ export default function AdminLayout() {
                 >
                   <Palette className="w-4 h-4 text-blue-500" />
                 </Link>
-
-                {/* نشانگر زمان باقی‌مانده نشست و تمدید */}
-                <button
-                  type="button"
-                  onClick={handleExtendSession}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all ${
-                    remainingSeconds <= 60
-                      ? 'bg-rose-50 text-rose-700 border-rose-300 animate-pulse'
-                      : `${activeTheme.userBox} hover:border-blue-400`
-                  }`}
-                  title="زمان باقی‌مانده تا خروج خودکار به دلیل عدم فعالیت (برای تمدید کلیک کنید)"
-                >
-                  <Clock className={`w-3.5 h-3.5 ${remainingSeconds <= 60 ? 'text-rose-600' : 'text-amber-500'}`} />
-                  <span className="font-mono text-xs">{formatRemainingTime(remainingSeconds)}</span>
-                  <RefreshCw className="w-3 h-3 opacity-60 hover:opacity-100 hover:rotate-180 transition-transform" />
-                </button>
 
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold ${activeTheme.userBox}`}>
                   <span className="truncate max-w-[120px]">{currentUser.name}</span>
