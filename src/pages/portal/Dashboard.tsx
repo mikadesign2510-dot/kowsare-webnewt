@@ -134,6 +134,14 @@ export default function PortalDashboard() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Top Portal Notice if configured */}
+      {portalSettings.portalNotice && (
+        <div className="p-4 bg-amber-500/10 border border-amber-500/30 text-amber-900 rounded-2xl flex items-center gap-3 text-xs md:text-sm font-bold shadow-sm">
+          <Bell className="w-5 h-5 text-amber-600 shrink-0 animate-pulse" />
+          <span className="leading-relaxed">{portalSettings.portalNotice}</span>
+        </div>
+      )}
+
       {/* Header Profile Banner */}
       <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="absolute -left-10 -bottom-10 w-60 h-60 bg-white/10 rounded-full blur-2xl pointer-events-none" />
@@ -156,7 +164,7 @@ export default function PortalDashboard() {
                 )}
               </div>
               <p className="text-blue-100 text-sm font-medium">
-                {major ? `${degreeLevel} رشته ${major}` : 'میز خدمت دانشجویان مرکز آموزش عالی کوثر کاکی'}
+                {portalSettings.welcomeMessage || (major ? `${degreeLevel} رشته ${major}` : 'میز خدمت دانشجویان مرکز آموزش عالی کوثر کاکی')}
               </p>
             </div>
           </div>

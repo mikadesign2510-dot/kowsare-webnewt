@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { Suspense } from 'react';
 import { LayoutDashboard, MessageSquare, Receipt, LogOut, Menu, X, User, ShieldAlert } from 'lucide-react';
-import { storage, PortalUser } from '../../lib/storage';
+import { storage, PortalUser, PortalSettings, defaultPortalSettings } from '../../lib/storage';
 import { toPersianDigits } from '../../lib/persianNumberHelper';
 
 export default function PortalLayout() {
@@ -11,6 +11,17 @@ export default function PortalLayout() {
   const [currentUser, setCurrentUser] = useState<PortalUser | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
+  const [portalSettings, setPortalSettings] = useState<PortalSettings>(storage.getPortalSettings());
+
+  useEffect(() => {
+    const handleSettingsUpdate = (e: any) => {
+      setPortalSettings(e.detail || storage.getPortalSettings());
+    };
+    window.addEventListener('kowsar_portal_settings_changed', handleSettingsUpdate);
+    return () => {
+      window.removeEventListener('kowsar_portal_settings_changed', handleSettingsUpdate);
+    };
+  }, []);
 
   const checkUserStatus = useCallback(() => {
     const authData = localStorage.getItem('kowsar_portal_auth');
@@ -130,7 +141,7 @@ export default function PortalLayout() {
           <div className="w-8 h-8 bg-indigo-600 text-white rounded-xl flex items-center justify-center">
             <User className="w-5 h-5" />
           </div>
-          <span className="font-black text-slate-800">میز خدمت دانشجویان</span>
+          <span className="font-black text-slate-800 text-sm">{portalSettings.portalTitle || 'میز خدمت دانشجویان'}</span>
         </div>
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
           {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

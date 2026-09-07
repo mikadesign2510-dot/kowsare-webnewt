@@ -1383,9 +1383,9 @@ export const storage = {
         ...defaultPortalSettings,
         ...parsed,
         passwordRecovery: { ...defaultPortalSettings.passwordRecovery, ...(parsed.passwordRecovery || {}) },
-        announcements: parsed.announcements?.length ? parsed.announcements : defaultPortalSettings.announcements,
-        departments: parsed.departments?.length ? parsed.departments : defaultPortalSettings.departments,
-        faqs: parsed.faqs?.length ? parsed.faqs : defaultPortalSettings.faqs,
+        announcements: Array.isArray(parsed.announcements) ? parsed.announcements : defaultPortalSettings.announcements,
+        departments: Array.isArray(parsed.departments) ? parsed.departments : defaultPortalSettings.departments,
+        faqs: Array.isArray(parsed.faqs) ? parsed.faqs : defaultPortalSettings.faqs,
       };
     } catch {
       return defaultPortalSettings;
@@ -1401,7 +1401,7 @@ export const storage = {
     });
     localStorage.setItem(PORTAL_SETTINGS_KEY, JSON.stringify(newSettings));
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('kowsar_portal_settings_changed'));
+      window.dispatchEvent(new CustomEvent('kowsar_portal_settings_changed', { detail: newSettings }));
     }
     
     // ذخیره دائمی و همگام‌سازی مستقیم تنظیمات پرتال در سرور
@@ -1414,6 +1414,33 @@ export const storage = {
     } catch (e) {
       console.warn('Network error saving portal settings:', e);
     }
+  },
+
+  savePortalSettingsToDB: async (newSettings: PortalSettings) => {
+    storage.addSecurityLog({
+      eventType: 'data_modified',
+      severity: 'medium',
+      message: 'ویرایش تنظیمات میز خدمت',
+      details: 'شخصی‌سازی میز خدمت در دیتابیس بروزرسانی شد.'
+    });
+    localStorage.setItem(PORTAL_SETTINGS_KEY, JSON.stringify(newSettings));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('kowsar_portal_settings_changed', { detail: newSettings }));
+    }
+    try {
+      const res = await fetch('/api/settings/portal', {
+        method: 'POST',
+        headers: getAdminAuthHeaders(),
+        body: JSON.stringify(newSettings)
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json;
+      }
+    } catch (e) {
+      console.warn('Could not save portal settings to DB:', e);
+    }
+    return { success: true };
   },
 
   resetPortalSettings: (): PortalSettings => {
@@ -3666,21 +3693,31 @@ export const storage = {
   },
 
 
-  syncPortalSettingsWithDB: async () => {
+  syncPortalSettingsWithDB: async (): Promise<PortalSettings> => {
     try {
       const res = await fetch('/api/settings/portal');
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
-          localStorage.setItem(PORTAL_SETTINGS_KEY, JSON.stringify(json.data));
+          const merged: PortalSettings = {
+            ...defaultPortalSettings,
+            ...json.data,
+            passwordRecovery: { ...defaultPortalSettings.passwordRecovery, ...(json.data.passwordRecovery || {}) },
+            announcements: Array.isArray(json.data.announcements) ? json.data.announcements : defaultPortalSettings.announcements,
+            departments: Array.isArray(json.data.departments) ? json.data.departments : defaultPortalSettings.departments,
+            faqs: Array.isArray(json.data.faqs) ? json.data.faqs : defaultPortalSettings.faqs,
+          };
+          localStorage.setItem(PORTAL_SETTINGS_KEY, JSON.stringify(merged));
           if (typeof window !== 'undefined') {
-            window.dispatchEvent(new Event('kowsar_portal_settings_changed'));
+            window.dispatchEvent(new CustomEvent('kowsar_portal_settings_changed', { detail: merged }));
           }
+          return merged;
         }
       }
     } catch (e) {
       console.warn('Could not sync portal settings from server:', e);
     }
+    return storage.getPortalSettings();
   },
 
   syncSettingsWithDB: async () => {

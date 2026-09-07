@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { storage, PortalUser, FinancialReceipt } from '../../lib/storage';
+import { storage, PortalUser, FinancialReceipt, PortalSettings, defaultPortalSettings } from '../../lib/storage';
 import { uploadFileToServer } from '../../lib/uploadHelper';
 import { 
   Receipt, 
@@ -15,7 +15,11 @@ import {
   Calendar, 
   Hash, 
   Info,
-  Sparkles
+  Sparkles,
+  CreditCard,
+  Building2,
+  Copy,
+  Clock
 } from 'lucide-react';
 import { 
   toEnglishDigits, 
@@ -46,6 +50,26 @@ export default function PortalFinancial() {
   const [user, setUser] = useState<PortalUser | null>(null);
   const [receipts, setReceipts] = useState<FinancialReceipt[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'create'>('list');
+  const [portalSettings, setPortalSettings] = useState<PortalSettings>(storage.getPortalSettings());
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPortalSettings(storage.getPortalSettings());
+    const handlePortalSettingsChange = (e: any) => {
+      setPortalSettings(e.detail || storage.getPortalSettings());
+    };
+    window.addEventListener('kowsar_portal_settings_changed', handlePortalSettingsChange);
+    return () => {
+      window.removeEventListener('kowsar_portal_settings_changed', handlePortalSettingsChange);
+    };
+  }, []);
+
+  const copyToClipboard = (text: string, key: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2500);
+  };
 
   // Form states
   const [rawAmount, setRawAmount] = useState(''); // Raw digits in Rials
@@ -214,7 +238,118 @@ export default function PortalFinancial() {
         )}
       </div>
 
-      {/* List View */}
+      {/* Official Bank Account & Financial Notice from Portal Settings */}
+      {(portalSettings.bankCardNumber || portalSettings.bankAccountNumber || portalSettings.bankShebaNumber || portalSettings.financialNoticeText) && (
+        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-800">
+                  {portalSettings.financialNoticeTitle || 'اطلاعات رسمی حساب‌های بانکی واریز شهریه'}
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  کلیه مبالغ شهریه و خدمات تنها به شماره حساب‌های رسمی زیر مورد پذیرش است.
+                </p>
+              </div>
+            </div>
+            {portalSettings.receiptReviewDays && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-200/60 rounded-xl text-xs font-bold self-start md:self-auto">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                مدت زمان بررسی فیش‌ها: {portalSettings.receiptReviewDays}
+              </div>
+            )}
+          </div>
+
+          {portalSettings.financialNoticeText && (
+            <div className="p-4 bg-blue-50/70 border border-blue-200/60 rounded-2xl text-xs text-blue-900 leading-relaxed font-medium">
+              {portalSettings.financialNoticeText}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Bank Card Number */}
+            {portalSettings.bankCardNumber && (
+              <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 text-white p-5 rounded-2xl shadow-md relative overflow-hidden flex flex-col justify-between min-h-[140px]">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-xl pointer-events-none" />
+                <div className="flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-2 text-indigo-200 text-xs font-bold">
+                    <CreditCard className="w-4 h-4" />
+                    <span>شماره کارت واریز</span>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard(portalSettings.bankCardNumber, 'card')}
+                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all text-xs flex items-center gap-1"
+                    title="کپی شماره کارت"
+                  >
+                    {copiedKey === 'card' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedKey === 'card' ? 'کپی شد' : 'کپی'}</span>
+                  </button>
+                </div>
+                <div className="my-2 relative z-10">
+                  <div className="font-mono text-center text-lg md:text-xl tracking-wider font-black text-amber-300 select-all" dir="ltr">
+                    {portalSettings.bankCardNumber}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-slate-300 relative z-10 border-t border-white/10 pt-2">
+                  <span>صاحب حساب:</span>
+                  <span className="font-bold text-white">{portalSettings.bankAccountOwner || 'مرکز آموزش عالی کوثر کاکی'}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Account Number */}
+            {portalSettings.bankAccountNumber && (
+              <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-600">شماره حساب بانکی:</span>
+                  <button
+                    onClick={() => copyToClipboard(portalSettings.bankAccountNumber, 'acc')}
+                    className="p-1.5 rounded-lg bg-white hover:bg-slate-200/80 text-slate-700 transition-all text-xs flex items-center gap-1 border border-slate-200"
+                    title="کپی شماره حساب"
+                  >
+                    {copiedKey === 'acc' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedKey === 'acc' ? 'کپی شد' : 'کپی'}</span>
+                  </button>
+                </div>
+                <div className="font-mono text-center text-base font-bold text-slate-800 my-2 select-all" dir="ltr">
+                  {portalSettings.bankAccountNumber}
+                </div>
+                <div className="text-[11px] text-slate-500 border-t border-slate-200/60 pt-2 flex justify-between">
+                  <span>نام صاحب حساب:</span>
+                  <span className="font-bold text-slate-700">{portalSettings.bankAccountOwner}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Sheba IBAN */}
+            {portalSettings.bankShebaNumber && (
+              <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-600">شماره شبا (IBAN):</span>
+                  <button
+                    onClick={() => copyToClipboard(portalSettings.bankShebaNumber, 'sheba')}
+                    className="p-1.5 rounded-lg bg-white hover:bg-slate-200/80 text-slate-700 transition-all text-xs flex items-center gap-1 border border-slate-200"
+                    title="کپی شماره شبا"
+                  >
+                    {copiedKey === 'sheba' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedKey === 'sheba' ? 'کپی شد' : 'کپی'}</span>
+                  </button>
+                </div>
+                <div className="font-mono text-center text-xs md:text-sm font-bold text-slate-800 my-2 break-all select-all" dir="ltr">
+                  {portalSettings.bankShebaNumber}
+                </div>
+                <div className="text-[11px] text-slate-500 border-t border-slate-200/60 pt-2 flex justify-between">
+                  <span>نوع حساب:</span>
+                  <span className="font-bold text-slate-700">حساب دولتی تمرکز وجوه</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {viewMode === 'list' && (
         <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
           <div className="p-5 border-b border-slate-100 flex items-center justify-between">

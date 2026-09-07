@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { storage, PortalUser, Ticket } from '../../lib/storage';
-import { MessageSquare, Plus, ArrowLeft, Send } from 'lucide-react';
+import { storage, PortalUser, Ticket, PortalSettings, defaultPortalSettings } from '../../lib/storage';
+import { MessageSquare, Plus, ArrowLeft, Send, Clock, Info, CheckCircle2 } from 'lucide-react';
 
 export default function PortalTickets() {
   const [user, setUser] = useState<PortalUser | null>(null);
@@ -8,10 +8,12 @@ export default function PortalTickets() {
   const [viewMode, setViewMode] = useState<'list' | 'create' | 'view'>('list');
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [newMessage, setNewMessage] = useState('');
+  const [portalSettings, setPortalSettings] = useState<PortalSettings>(storage.getPortalSettings());
+  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
 
   // form state
   const [subject, setSubject] = useState('');
-  const [department, setDepartment] = useState<'education' | 'financial' | 'cultural' | 'it'>('education');
+  const [department, setDepartment] = useState<string>('education');
   const [firstMessage, setFirstMessage] = useState('');
 
   useEffect(() => {
@@ -21,10 +23,29 @@ export default function PortalTickets() {
       setUser(parsed);
       loadTickets(parsed.id);
     }
+    const handleSettingsUpdate = (e: any) => {
+      setPortalSettings(e.detail || storage.getPortalSettings());
+    };
+    window.addEventListener('kowsar_portal_settings_changed', handleSettingsUpdate);
+    return () => {
+      window.removeEventListener('kowsar_portal_settings_changed', handleSettingsUpdate);
+    };
   }, []);
 
   const loadTickets = (userId: string) => {
     setTickets(storage.getTickets().filter(t => t.userId === userId));
+  };
+
+  const getDepartmentName = (deptId: string) => {
+    const found = portalSettings.departments?.find(d => d.id === deptId);
+    if (found) return found.name;
+    const defaults: Record<string, string> = {
+      education: 'امور آموزشی',
+      financial: 'امور مالی و شهریه',
+      cultural: 'امور فرهنگی و دانشجویی',
+      it: 'فناوری اطلاعات و سامانه'
+    };
+    return defaults[deptId] || deptId;
   };
 
   const handleCreate = (e: React.FormEvent) => {
@@ -35,13 +56,15 @@ export default function PortalTickets() {
       userId: user.id,
       userName: user.name,
       subject,
-      department
+      department: department as any
     }, firstMessage, user.name);
 
     loadTickets(user.id);
     setViewMode('list');
     setSubject('');
     setFirstMessage('');
+    setSubmitSuccess(portalSettings.ticketSuccessMessage || 'درخواست شما با موفقیت ثبت شد و در صف بررسی کارشناسان قرار گرفت.');
+    setTimeout(() => setSubmitSuccess(null), 6000);
   };
 
   const handleReply = (e: React.FormEvent) => {
@@ -86,6 +109,37 @@ export default function PortalTickets() {
         )}
       </div>
 
+      {/* Success Notification */}
+      {submitSuccess && (
+        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl flex items-center gap-3 text-sm font-bold shadow-sm">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+          <span>{submitSuccess}</span>
+        </div>
+      )}
+
+      {/* Ticket Guidelines Banner from Portal Customization */}
+      {(portalSettings.ticketGuidelines || portalSettings.ticketWorkingHours) && (
+        <div className="mb-6 bg-white border border-slate-200/80 p-5 rounded-3xl shadow-sm space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-slate-800 font-black text-sm">
+              <Info className="w-4 h-4 text-indigo-600" />
+              <span>{portalSettings.ticketGuidelinesTitle || 'راهنما و مقررات ثبت تیکت'}</span>
+            </div>
+            {portalSettings.ticketWorkingHours && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-xl">
+                <Clock className="w-3.5 h-3.5" />
+                ساعات پاسخگویی: {portalSettings.ticketWorkingHours}
+              </span>
+            )}
+          </div>
+          {portalSettings.ticketGuidelines && (
+            <p className="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line">
+              {portalSettings.ticketGuidelines}
+            </p>
+          )}
+        </div>
+      )}
+
       {viewMode === 'list' && (
         <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
           {tickets.length === 0 ? (
@@ -109,10 +163,8 @@ export default function PortalTickets() {
                   {tickets.map(ticket => (
                     <tr key={ticket.id} className="hover:bg-slate-50">
                       <td className="p-4 text-sm font-bold text-slate-800">{ticket.subject}</td>
-                      <td className="p-4 text-sm text-slate-600">
-                        {ticket.department === 'education' ? 'آموزش' :
-                         ticket.department === 'financial' ? 'مالی' :
-                         ticket.department === 'cultural' ? 'فرهنگی' : 'فناوری اطلاعات'}
+                      <td className="p-4 text-sm text-slate-600 font-medium">
+                        {getDepartmentName(ticket.department)}
                       </td>
                       <td className="p-4 text-sm">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${
@@ -162,13 +214,23 @@ export default function PortalTickets() {
               <label className="block text-slate-700 font-bold mb-2 text-sm">بخش مربوطه</label>
               <select
                 value={department}
-                onChange={e => setDepartment(e.target.value as any)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                onChange={e => setDepartment(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800"
               >
-                <option value="education">امور آموزشی</option>
-                <option value="financial">امور مالی</option>
-                <option value="cultural">امور فرهنگی</option>
-                <option value="it">فناوری اطلاعات</option>
+                {portalSettings.departments && portalSettings.departments.filter(d => d.isActive).length > 0 ? (
+                  portalSettings.departments.filter(d => d.isActive).map(dept => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name} {dept.description ? `— ${dept.description}` : ''}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="education">امور آموزشی</option>
+                    <option value="financial">امور مالی و شهریه</option>
+                    <option value="cultural">امور فرهنگی و دانشجویی</option>
+                    <option value="it">فناوری اطلاعات و سامانه</option>
+                  </>
+                )}
               </select>
             </div>
             <div>

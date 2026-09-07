@@ -8,6 +8,15 @@ import {
   defaultPortalSettings 
 } from '../../lib/storage';
 import DeleteConfirmModal from '../../components/admin/DeleteConfirmModal';
+import {
+  GeneralSectionPreview,
+  LoginSectionPreview,
+  AnnouncementsSectionPreview,
+  TicketsSectionPreview,
+  FinancialSectionPreview,
+  SupportSectionPreview,
+  FaqSectionPreview
+} from '../../components/admin/PortalSectionPreviews';
 import { 
   Sliders, 
   Save, 
@@ -40,13 +49,15 @@ import {
   ShieldCheck,
   CheckSquare,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Loader2
 } from 'lucide-react';
 
 export default function PortalCustomization() {
   const [settings, setSettings] = useState<PortalSettings>(defaultPortalSettings);
   const [activeTab, setActiveTab] = useState<'general' | 'login' | 'recovery' | 'announcements' | 'tickets' | 'financial' | 'support' | 'faq'>('general');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
   const [newInstructionText, setNewInstructionText] = useState('');
 
@@ -72,6 +83,13 @@ export default function PortalCustomization() {
   useEffect(() => {
     const current = storage.getPortalSettings();
     setSettings(current);
+
+    // Also fetch latest from backend API / DB
+    storage.syncPortalSettingsWithDB().then(dbSettings => {
+      if (dbSettings) {
+        setSettings(dbSettings);
+      }
+    });
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -153,10 +171,13 @@ export default function PortalCustomization() {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSaving(true);
     storage.updatePortalSettings(settings);
+    await storage.savePortalSettingsToDB(settings);
+    setIsSaving(false);
     setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    setTimeout(() => setSaveSuccess(false), 3500);
   };
 
   const handleReset = () => {
@@ -166,12 +187,15 @@ export default function PortalCustomization() {
       message: 'آیا از بازنشانی کلیه تنظیمات، اطلاعیه‌ها، راهنماها و شماره حساب‌های میز خدمت به مقادیر پیش‌فرض اطمینان دارید؟',
       variant: 'warning',
       confirmText: 'بله، بازنشانی شود',
-      onConfirm: () => {
+      onConfirm: async () => {
+        setIsSaving(true);
         const resetVal = storage.resetPortalSettings();
         setSettings(resetVal);
+        await storage.savePortalSettingsToDB(resetVal);
+        setIsSaving(false);
         setDeleteConfirmState(null);
         setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
+        setTimeout(() => setSaveSuccess(false), 3500);
       }
     });
   };
@@ -341,11 +365,14 @@ export default function PortalCustomization() {
 
           <button
             type="button"
+            disabled={isSaving}
             onClick={handleSave}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-md shadow-emerald-600/20 transition-all"
+            className={`flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-md shadow-emerald-600/20 transition-all ${
+              isSaving ? 'opacity-70 cursor-wait' : ''
+            }`}
           >
-            <Save className="w-4 h-4" />
-            ذخیره کلیه تنظیمات
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            <span>{isSaving ? 'در حال ذخیره‌سازی...' : 'ذخیره کلیه تنظیمات'}</span>
           </button>
         </div>
       </div>
@@ -601,6 +628,9 @@ export default function PortalCustomization() {
                 </div>
               )}
             </div>
+
+            {/* Live Preview for General Tab */}
+            <GeneralSectionPreview settings={settings} />
           </div>
         )}
 
@@ -675,6 +705,9 @@ export default function PortalCustomization() {
                 />
               </div>
             </div>
+
+            {/* Live Preview for Login Tab */}
+            <LoginSectionPreview settings={settings} />
           </div>
         )}
 
@@ -1335,6 +1368,9 @@ export default function PortalCustomization() {
                 );
               })}
             </div>
+
+            {/* Live Preview for Announcements Tab */}
+            <AnnouncementsSectionPreview announcements={settings.announcements} />
           </div>
         )}
 
@@ -1432,6 +1468,9 @@ export default function PortalCustomization() {
                 ))}
               </div>
             </div>
+
+            {/* Live Preview for Tickets Tab */}
+            <TicketsSectionPreview settings={settings} />
           </div>
         )}
 
@@ -1533,6 +1572,9 @@ export default function PortalCustomization() {
                 />
               </div>
             </div>
+
+            {/* Live Preview for Financial Tab */}
+            <FinancialSectionPreview settings={settings} />
           </div>
         )}
 
@@ -1609,6 +1651,9 @@ export default function PortalCustomization() {
                 />
               </div>
             </div>
+
+            {/* Live Preview for Support Tab */}
+            <SupportSectionPreview settings={settings} />
           </div>
         )}
 
@@ -1690,9 +1735,41 @@ export default function PortalCustomization() {
                 </div>
               ))}
             </div>
+
+            {/* Live Preview for FAQ Tab */}
+            <FaqSectionPreview faqs={settings.faqs} />
           </div>
         )}
 
+      </div>
+
+      {/* Bottom Sticky Save Action Bar */}
+      <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-20 backdrop-blur-md bg-white/95">
+        <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>تغییرات شما بلافاصله پس از ذخیره، در میز خدمت دانشجویان و سرور پایدار اعمال می‌گردد.</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleReset}
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            بازنشانی پیش‌فرض
+          </button>
+          <button
+            type="button"
+            disabled={isSaving}
+            onClick={handleSave}
+            className={`flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-md shadow-emerald-600/20 transition-all ${
+              isSaving ? 'opacity-70 cursor-wait' : ''
+            }`}
+          >
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            <span>{isSaving ? 'در حال ذخیره‌سازی...' : 'ذخیره کلیه تنظیمات'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Announcement Create / Edit Modal */}
