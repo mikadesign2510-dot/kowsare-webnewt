@@ -89,7 +89,7 @@ export function GeneralSectionPreview({ settings }: { settings: PortalSettings }
             <h3 className="text-lg font-black text-rose-900 mt-2">سامانه میز خدمت موقتاً در دسترس نمی‌باشد</h3>
           </div>
           <p className="text-xs text-rose-800 leading-relaxed font-medium bg-white/70 p-4 rounded-2xl border border-rose-200/80">
-            {settings.maintenanceMessage || 'میز خدمت دانشجویان موقتاً جهت بروزرسانی تا اطلاع ثانوی در دسترس نمی‌باشد.'}
+            {toPersianDigits(settings.maintenanceMessage || 'میز خدمت دانشجویان موقتاً جهت بروزرسانی تا اطلاع ثانوی در دسترس نمی‌باشد.')}
           </p>
         </div>
       ) : (
@@ -99,7 +99,7 @@ export function GeneralSectionPreview({ settings }: { settings: PortalSettings }
           {settings.portalNotice && (
             <div className="p-3.5 bg-amber-500/15 border border-amber-500/30 text-amber-950 rounded-2xl flex items-center gap-3 text-xs font-bold shadow-xs">
               <Bell className="w-4 h-4 text-amber-600 shrink-0 animate-bounce" />
-              <span className="leading-relaxed">{settings.portalNotice}</span>
+              <span className="leading-relaxed font-sans">{toPersianDigits(settings.portalNotice)}</span>
             </div>
           )}
 
@@ -110,8 +110,8 @@ export function GeneralSectionPreview({ settings }: { settings: PortalSettings }
                 <GraduationCap className="w-5 h-5" />
               </div>
               <div>
-                <h5 className="font-black text-slate-800 text-sm">{settings.portalTitle || 'میز خدمت دانشجویان'}</h5>
-                <p className="text-[11px] text-slate-500 font-medium">{settings.portalSubtitle || 'مرکز آموزش عالی کوثر کاکی'}</p>
+                <h5 className="font-black text-slate-800 text-sm font-sans">{toPersianDigits(settings.portalTitle || 'میز خدمت دانشجویان')}</h5>
+                <p className="text-[11px] text-slate-500 font-medium font-sans">{toPersianDigits(settings.portalSubtitle || 'مرکز آموزش عالی کوثر کاکی')}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -135,8 +135,8 @@ export function GeneralSectionPreview({ settings }: { settings: PortalSettings }
                       دانشجوی فعال
                     </span>
                   </div>
-                  <p className="text-blue-100 text-xs font-medium mt-1">
-                    {settings.welcomeMessage || 'به پرتال جامع دانشجویی مرکز آموزش عالی کوثر کاکی خوش آمدید.'}
+                  <p className="text-blue-100 text-xs font-medium mt-1 font-sans">
+                    {toPersianDigits(settings.welcomeMessage || 'به پرتال جامع دانشجویی مرکز آموزش عالی کوثر کاکی خوش آمدید.')}
                   </p>
                 </div>
               </div>
@@ -160,7 +160,7 @@ export function LoginSectionPreview({ settings }: { settings: PortalSettings }) 
         {settings.loginAlertBanner && (
           <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl flex items-start gap-2.5 text-xs font-bold shadow-xs">
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <span className="leading-relaxed">{settings.loginAlertBanner}</span>
+            <span className="leading-relaxed">{toPersianDigits(settings.loginAlertBanner)}</span>
           </div>
         )}
 
@@ -168,8 +168,8 @@ export function LoginSectionPreview({ settings }: { settings: PortalSettings }) 
           <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-xs border border-blue-100">
             <GraduationCap className="w-6 h-6" />
           </div>
-          <h4 className="text-base font-black text-slate-800">{settings.loginTitle || 'ورود به میز خدمت دانشجویان'}</h4>
-          <p className="text-xs text-slate-500 font-medium">{settings.loginSubtitle || 'سامانه یکپارچه خدمات الکترونیک مرکز آموزش عالی کوثر کاکی'}</p>
+          <h4 className="text-base font-black text-slate-800">{toPersianDigits(settings.loginTitle || 'ورود به میز خدمت دانشجویان')}</h4>
+          <p className="text-xs text-slate-500 font-medium">{toPersianDigits(settings.loginSubtitle || 'سامانه یکپارچه خدمات الکترونیک مرکز آموزش عالی کوثر کاکی')}</p>
         </div>
 
         <div className="space-y-3 text-xs">
@@ -180,13 +180,13 @@ export function LoginSectionPreview({ settings }: { settings: PortalSettings }) 
                 type="text" 
                 disabled 
                 placeholder="مثال: ۴۰۰۱۲۳۴۵۶ یا ۱۲۳۴۵۶۷۸۹۰" 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-600 text-left font-mono"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-600 text-left font-sans"
                 dir="ltr"
               />
             </div>
             {settings.loginHelperText && (
               <p className="text-[11px] text-slate-500 font-medium mt-1 leading-normal">
-                💡 {settings.loginHelperText}
+                💡 {toPersianDigits(settings.loginHelperText)}
               </p>
             )}
           </div>
@@ -198,7 +198,7 @@ export function LoginSectionPreview({ settings }: { settings: PortalSettings }) 
                 type="password" 
                 disabled 
                 value="••••••••" 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-400 text-left font-mono"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-400 text-left font-sans"
                 dir="ltr"
               />
             </div>
@@ -222,7 +222,7 @@ export function LoginSectionPreview({ settings }: { settings: PortalSettings }) 
             </div>
             {settings.forgotPasswordHelp && (
               <div className="mt-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-[11px] text-slate-600 leading-relaxed font-medium">
-                {settings.forgotPasswordHelp}
+                {toPersianDigits(settings.forgotPasswordHelp)}
               </div>
             )}
           </div>
@@ -269,15 +269,15 @@ export function AnnouncementsSectionPreview({ announcements }: { announcements: 
                 {icon}
                 <div className="flex-grow space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <h5 className="font-black text-xs sm:text-sm flex items-center gap-1.5">
-                      {ann.title}
+                    <h5 className="font-black text-xs sm:text-sm flex items-center gap-1.5 font-sans">
+                      {toPersianDigits(ann.title)}
                     </h5>
                     <span className="text-[10px] opacity-75 font-bold">
                       {ann.type === 'danger' ? 'فوری / مهم' : ann.type === 'warning' ? 'هشدار' : ann.type === 'success' ? 'تاییدیه' : 'اطلاعیه'}
                     </span>
                   </div>
-                  <p className="text-xs font-medium leading-relaxed opacity-90 whitespace-pre-line">
-                    {ann.content}
+                  <p className="text-xs font-medium leading-relaxed opacity-90 whitespace-pre-line font-sans">
+                    {toPersianDigits(ann.content)}
                   </p>
                 </div>
               </div>
@@ -305,18 +305,18 @@ export function TicketsSectionPreview({ settings }: { settings: PortalSettings }
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-slate-800 font-black text-xs sm:text-sm">
                 <Info className="w-4 h-4 text-indigo-600" />
-                <span>{settings.ticketGuidelinesTitle || 'راهنما و مقررات ثبت تیکت'}</span>
+                <span>{toPersianDigits(settings.ticketGuidelinesTitle || 'راهنما و مقررات ثبت تیکت')}</span>
               </div>
               {settings.ticketWorkingHours && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-xl border border-indigo-100">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-xl border border-indigo-100 font-sans">
                   <Clock className="w-3.5 h-3.5" />
-                  ساعات پاسخگویی: {settings.ticketWorkingHours}
+                  ساعات پاسخگویی: {toPersianDigits(settings.ticketWorkingHours)}
                 </span>
               )}
             </div>
             {settings.ticketGuidelines && (
-              <p className="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line">
-                {settings.ticketGuidelines}
+              <p className="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line font-sans">
+                {toPersianDigits(settings.ticketGuidelines)}
               </p>
             )}
           </div>
@@ -329,9 +329,9 @@ export function TicketsSectionPreview({ settings }: { settings: PortalSettings }
             {activeDepts.length > 0 ? (
               activeDepts.map(dep => (
                 <div key={dep.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                  <span className="font-bold text-xs text-slate-800 block">{dep.name}</span>
+                  <span className="font-bold text-xs text-slate-800 block font-sans">{toPersianDigits(dep.name)}</span>
                   {dep.description && (
-                    <span className="text-[11px] text-slate-500 font-medium block mt-0.5">{dep.description}</span>
+                    <span className="text-[11px] text-slate-500 font-medium block mt-0.5 font-sans">{toPersianDigits(dep.description)}</span>
                   )}
                 </div>
               ))
@@ -345,7 +345,7 @@ export function TicketsSectionPreview({ settings }: { settings: PortalSettings }
           {settings.ticketSuccessMessage && (
             <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl flex items-center gap-2 text-xs font-bold">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>پیام پس از ثبت: {settings.ticketSuccessMessage}</span>
+              <span className="font-sans">پیام پس از ثبت: {toPersianDigits(settings.ticketSuccessMessage)}</span>
             </div>
           )}
         </div>
@@ -374,11 +374,11 @@ export function FinancialSectionPreview({ settings }: { settings: PortalSettings
         <div className="p-4 bg-amber-500/10 border border-amber-500/20 text-amber-950 rounded-2xl flex items-start gap-3">
           <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <div className="text-xs space-y-1">
-            <span className="font-black block">{settings.financialNoticeTitle || 'راهنمای واریز و ثبت فیش شهریه'}</span>
-            <p className="leading-relaxed opacity-90 font-medium">{settings.financialNoticeText}</p>
+            <span className="font-black block">{toPersianDigits(settings.financialNoticeTitle || 'راهنمای واریز و ثبت فیش شهریه')}</span>
+            <p className="leading-relaxed opacity-90 font-medium font-sans">{toPersianDigits(settings.financialNoticeText)}</p>
             {settings.receiptReviewDays && (
-              <span className="inline-block mt-1 font-bold text-[11px] text-amber-800 bg-amber-200/50 px-2 py-0.5 rounded-md">
-                ⏱️ زمان بررسی فیش‌ها: {settings.receiptReviewDays}
+              <span className="inline-block mt-1 font-bold text-[11px] text-amber-800 bg-amber-200/50 px-2 py-0.5 rounded-md font-sans">
+                ⏱️ زمان بررسی فیش‌ها: {toPersianDigits(settings.receiptReviewDays)}
               </span>
             )}
           </div>
@@ -390,7 +390,7 @@ export function FinancialSectionPreview({ settings }: { settings: PortalSettings
           <div className="flex justify-between items-start mb-6">
             <div>
               <span className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider block">کارت پرداخت شهریه</span>
-              <h5 className="font-black text-sm">{settings.bankAccountTitle || 'حساب رسمی مرکز آموزش'}</h5>
+              <h5 className="font-black text-sm">{toPersianDigits(settings.bankAccountTitle || 'حساب رسمی مرکز آموزش')}</h5>
             </div>
             <div className="w-10 h-7 bg-amber-400/80 rounded-md shadow-inner flex items-center justify-center">
               <div className="w-6 h-4 border border-amber-600/50 rounded-xs" />
@@ -398,19 +398,19 @@ export function FinancialSectionPreview({ settings }: { settings: PortalSettings
           </div>
 
           <div className="my-4 text-center">
-            <span className="font-mono text-base md:text-lg tracking-widest font-black" dir="ltr">
-              {settings.bankCardNumber || '۶۲۷۳-۵۳۰۰-۰۰۰۰-۰۰۰۰'}
+            <span className="font-sans text-base md:text-lg tracking-wider font-black" dir="ltr">
+              {toPersianDigits(settings.bankCardNumber || '۶۲۷۳-۵۳۰۰-۰۰۰۰-۰۰۰۰')}
             </span>
           </div>
 
           <div className="flex justify-between items-end text-xs pt-2 border-t border-white/10">
             <div>
               <span className="text-[10px] text-indigo-300 block">صاحب حساب:</span>
-              <span className="font-bold">{settings.bankAccountOwner || 'مرکز آموزش عالی کوثر کاکی'}</span>
+              <span className="font-bold font-sans">{toPersianDigits(settings.bankAccountOwner || 'مرکز آموزش عالی کوثر کاکی')}</span>
             </div>
             <button 
-              type="button"
-              onClick={() => handleCopy(settings.bankCardNumber, 'card')}
+              type="button" 
+              onClick={() => handleCopy(toPersianDigits(settings.bankCardNumber), 'card')}
               className="flex items-center gap-1 bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-xl text-[11px] font-bold transition-colors"
             >
               {copiedField === 'card' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -423,14 +423,14 @@ export function FinancialSectionPreview({ settings }: { settings: PortalSettings
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
             <span className="text-[11px] text-slate-500 font-bold block mb-1">شماره حساب رسمی:</span>
-            <span className="font-mono font-black text-slate-800 text-sm" dir="ltr">
-              {settings.bankAccountNumber || '---'}
+            <span className="font-sans font-black text-slate-800 text-sm" dir="ltr">
+              {toPersianDigits(settings.bankAccountNumber || '---')}
             </span>
           </div>
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
             <span className="text-[11px] text-slate-500 font-bold block mb-1">شماره شبا (IBAN):</span>
-            <span className="font-mono font-black text-slate-800 text-xs truncate block" dir="ltr">
-              {settings.bankShebaNumber || 'IR---'}
+            <span className="font-sans font-black text-slate-800 text-xs truncate block" dir="ltr">
+              {toPersianDigits(settings.bankShebaNumber || 'IR---')}
             </span>
           </div>
         </div>
@@ -454,7 +454,7 @@ export function SupportSectionPreview({ settings }: { settings: PortalSettings }
           </div>
           <div>
             <span className="text-[11px] text-slate-500 font-bold block">تلفن اداره آموزش:</span>
-            <span className="font-bold text-sm text-slate-800 font-mono" dir="ltr">
+            <span className="font-bold text-sm text-slate-800 font-sans" dir="ltr">
               {toPersianDigits(settings.supportPhone || '۰۷۷-۳۵۳۲۰۰۰۰')}
             </span>
           </div>
@@ -467,7 +467,7 @@ export function SupportSectionPreview({ settings }: { settings: PortalSettings }
           </div>
           <div>
             <span className="text-[11px] text-slate-500 font-bold block">همراه و واتساپ پشتیبانی:</span>
-            <span className="font-bold text-sm text-slate-800 font-mono" dir="ltr">
+            <span className="font-bold text-sm text-slate-800 font-sans" dir="ltr">
               {toPersianDigits(settings.supportMobile || '۰۹۱۷۰۰۰۰۰۰۰')}
             </span>
           </div>
@@ -480,7 +480,7 @@ export function SupportSectionPreview({ settings }: { settings: PortalSettings }
           </div>
           <div>
             <span className="text-[11px] text-slate-500 font-bold block">پیام‌رسان ایتا (Eitaa):</span>
-            <span className="font-bold text-xs text-slate-800 font-mono" dir="ltr">
+            <span className="font-bold text-xs text-slate-800 font-sans" dir="ltr">
               @{settings.supportEitaa || 'kowsar_kaki_uni'}
             </span>
           </div>
@@ -493,7 +493,7 @@ export function SupportSectionPreview({ settings }: { settings: PortalSettings }
           </div>
           <div>
             <span className="text-[11px] text-slate-500 font-bold block">کانال تلگرام:</span>
-            <span className="font-bold text-xs text-slate-800 font-mono" dir="ltr">
+            <span className="font-bold text-xs text-slate-800 font-sans" dir="ltr">
               @{settings.supportTelegram || 'kowsar_kaki_uni'}
             </span>
           </div>
@@ -504,7 +504,7 @@ export function SupportSectionPreview({ settings }: { settings: PortalSettings }
           <Clock className="w-5 h-5 text-indigo-600 shrink-0" />
           <div className="text-xs text-indigo-900">
             <span className="font-bold block">ساعات پاسخگویی حضوری و اداری:</span>
-            <span className="font-medium mt-0.5 block">{settings.supportHours || 'شنبه تا چهارشنبه: ۰۸:۰۰ الی ۱۴:۰۰'}</span>
+            <span className="font-medium mt-0.5 block font-sans">{toPersianDigits(settings.supportHours || 'شنبه تا چهارشنبه: ۰۸:۰۰ الی ۱۴:۰۰')}</span>
           </div>
         </div>
       </div>
@@ -533,7 +533,7 @@ export function FaqSectionPreview({ faqs }: { faqs: PortalFAQ[] }) {
             const isOpen = openIdx === idx;
             return (
               <div 
-                key={faq.id}
+                key={faq.id} 
                 className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs transition-all"
               >
                 <button
@@ -542,19 +542,19 @@ export function FaqSectionPreview({ faqs }: { faqs: PortalFAQ[] }) {
                   className="w-full p-4 flex items-center justify-between gap-3 text-right hover:bg-slate-50/80 transition-colors"
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">
-                      {idx + 1}
+                    <span className="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0 font-sans">
+                      {toPersianDigits(idx + 1)}
                     </span>
-                    <span className="font-bold text-xs sm:text-sm text-slate-800">{faq.question}</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                      {faq.category}
+                    <span className="font-bold text-xs sm:text-sm text-slate-800 font-sans">{toPersianDigits(faq.question)}</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-sans">
+                      {toPersianDigits(faq.category)}
                     </span>
                   </div>
                   {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
                 </button>
                 {isOpen && (
-                  <div className="px-4 pb-4 pt-1 text-xs text-slate-600 leading-relaxed font-medium border-t border-slate-100 bg-slate-50/40">
-                    {faq.answer}
+                  <div className="px-4 pb-4 pt-1 text-xs text-slate-600 leading-relaxed font-medium border-t border-slate-100 bg-slate-50/40 font-sans">
+                    {toPersianDigits(faq.answer)}
                   </div>
                 )}
               </div>

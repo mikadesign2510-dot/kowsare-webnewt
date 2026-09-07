@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { storage, PortalUser, Ticket, PortalSettings, defaultPortalSettings } from '../../lib/storage';
 import { MessageSquare, Plus, ArrowLeft, Send, Clock, Info, CheckCircle2 } from 'lucide-react';
+import { toPersianDigits } from '../../lib/persianNumberHelper';
 
 export default function PortalTickets() {
   const [user, setUser] = useState<PortalUser | null>(null);
@@ -126,15 +127,15 @@ export default function PortalTickets() {
               <span>{portalSettings.ticketGuidelinesTitle || 'راهنما و مقررات ثبت تیکت'}</span>
             </div>
             {portalSettings.ticketWorkingHours && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-xl">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-xl font-sans">
                 <Clock className="w-3.5 h-3.5" />
-                ساعات پاسخگویی: {portalSettings.ticketWorkingHours}
+                ساعات پاسخگویی: {toPersianDigits(portalSettings.ticketWorkingHours)}
               </span>
             )}
           </div>
           {portalSettings.ticketGuidelines && (
-            <p className="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line">
-              {portalSettings.ticketGuidelines}
+            <p className="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line font-sans">
+              {toPersianDigits(portalSettings.ticketGuidelines)}
             </p>
           )}
         </div>
@@ -162,9 +163,9 @@ export default function PortalTickets() {
                 <tbody className="divide-y divide-slate-100">
                   {tickets.map(ticket => (
                     <tr key={ticket.id} className="hover:bg-slate-50">
-                      <td className="p-4 text-sm font-bold text-slate-800">{ticket.subject}</td>
-                      <td className="p-4 text-sm text-slate-600 font-medium">
-                        {getDepartmentName(ticket.department)}
+                      <td className="p-4 text-sm font-bold text-slate-800 font-sans">{toPersianDigits(ticket.subject)}</td>
+                      <td className="p-4 text-sm text-slate-600 font-medium font-sans">
+                        {toPersianDigits(getDepartmentName(ticket.department))}
                       </td>
                       <td className="p-4 text-sm">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${
@@ -176,8 +177,8 @@ export default function PortalTickets() {
                            ticket.status === 'answered' ? 'پاسخ داده شده' : 'بسته شده'}
                         </span>
                       </td>
-                      <td className="p-4 text-sm text-slate-500" dir="ltr">
-                        {new Date(ticket.updatedAt).toLocaleDateString('fa-IR')}
+                      <td className="p-4 text-sm text-slate-500 font-sans" dir="ltr">
+                        {toPersianDigits(new Date(ticket.updatedAt).toLocaleDateString('fa-IR'))}
                       </td>
                       <td className="p-4">
                         <button 
@@ -207,7 +208,7 @@ export default function PortalTickets() {
                 required
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-sans"
               />
             </div>
             <div>
@@ -215,12 +216,12 @@ export default function PortalTickets() {
               <select
                 value={department}
                 onChange={e => setDepartment(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 font-sans"
               >
                 {portalSettings.departments && portalSettings.departments.filter(d => d.isActive).length > 0 ? (
                   portalSettings.departments.filter(d => d.isActive).map(dept => (
                     <option key={dept.id} value={dept.id}>
-                      {dept.name} {dept.description ? `— ${dept.description}` : ''}
+                      {toPersianDigits(dept.name)} {dept.description ? `— ${toPersianDigits(dept.description)}` : ''}
                     </option>
                   ))
                 ) : (
@@ -240,7 +241,7 @@ export default function PortalTickets() {
                 rows={4}
                 value={firstMessage}
                 onChange={e => setFirstMessage(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-sans"
               ></textarea>
             </div>
             <button 
@@ -257,8 +258,8 @@ export default function PortalTickets() {
         <div className="bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-col h-[600px] max-w-4xl">
           <div className="p-4 border-b border-slate-100 bg-slate-50 rounded-t-3xl flex justify-between items-center">
             <div>
-              <h2 className="font-bold text-slate-800">{activeTicket.subject}</h2>
-              <p className="text-xs text-slate-500">کد رهگیری: {activeTicket.id}</p>
+              <h2 className="font-bold text-slate-800 font-sans">{toPersianDigits(activeTicket.subject)}</h2>
+              <p className="text-xs text-slate-500 font-sans">کد رهگیری: {toPersianDigits(activeTicket.id)}</p>
             </div>
             <span className={`px-3 py-1 rounded-full text-xs font-bold ${
               activeTicket.status === 'open' ? 'bg-amber-100 text-amber-700' :
@@ -278,9 +279,9 @@ export default function PortalTickets() {
                 }`}>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="font-bold text-xs">{msg.senderName}</span>
-                    <span className="text-[10px] opacity-70" dir="ltr">{new Date(msg.date).toLocaleString('fa-IR')}</span>
+                    <span className="text-[10px] opacity-70 font-sans" dir="ltr">{toPersianDigits(new Date(msg.date).toLocaleString('fa-IR'))}</span>
                   </div>
-                  <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                  <p className="text-sm whitespace-pre-wrap font-sans">{toPersianDigits(msg.text)}</p>
                 </div>
               </div>
             ))}

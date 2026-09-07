@@ -100,7 +100,7 @@ export default function PortalFinancial() {
     }
   }, [date]);
 
-  // Handle amount change with live 3-digit formatting in Rials
+  // Handle amount change with live 3-digit formatting in Rials with Persian digits
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputVal = e.target.value;
     const cleanDigits = toEnglishDigits(inputVal);
@@ -111,16 +111,16 @@ export default function PortalFinancial() {
       return;
     }
 
-    // Format with commas / chosen separator
+    // Format with commas / chosen separator using Persian digits
     const sep = separatorType === '،' ? '،' : separatorType;
-    const formatted = formatDigitSeparators(cleanDigits, sep === '،' ? ',' : (sep as any));
+    const formatted = formatPersianDigitSeparators(cleanDigits, sep);
     setFormattedDisplayAmount(formatted);
   };
 
   const handleSeparatorChange = (newSep: ',' | '.' | '/') => {
     setSeparatorType(newSep);
     if (rawAmount) {
-      const formatted = formatDigitSeparators(rawAmount, newSep);
+      const formatted = formatPersianDigitSeparators(rawAmount, newSep);
       setFormattedDisplayAmount(formatted);
     }
   };
@@ -256,16 +256,16 @@ export default function PortalFinancial() {
               </div>
             </div>
             {portalSettings.receiptReviewDays && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-200/60 rounded-xl text-xs font-bold self-start md:self-auto">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-200/60 rounded-xl text-xs font-bold self-start md:self-auto font-sans">
                 <Clock className="w-3.5 h-3.5 text-amber-600" />
-                مدت زمان بررسی فیش‌ها: {portalSettings.receiptReviewDays}
+                مدت زمان بررسی فیش‌ها: {toPersianDigits(portalSettings.receiptReviewDays)}
               </div>
             )}
           </div>
 
           {portalSettings.financialNoticeText && (
-            <div className="p-4 bg-blue-50/70 border border-blue-200/60 rounded-2xl text-xs text-blue-900 leading-relaxed font-medium">
-              {portalSettings.financialNoticeText}
+            <div className="p-4 bg-blue-50/70 border border-blue-200/60 rounded-2xl text-xs text-blue-900 leading-relaxed font-medium font-sans">
+              {toPersianDigits(portalSettings.financialNoticeText)}
             </div>
           )}
 
@@ -280,7 +280,7 @@ export default function PortalFinancial() {
                     <span>شماره کارت واریز</span>
                   </div>
                   <button
-                    onClick={() => copyToClipboard(portalSettings.bankCardNumber, 'card')}
+                    onClick={() => copyToClipboard(toPersianDigits(portalSettings.bankCardNumber), 'card')}
                     className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all text-xs flex items-center gap-1"
                     title="کپی شماره کارت"
                   >
@@ -289,13 +289,13 @@ export default function PortalFinancial() {
                   </button>
                 </div>
                 <div className="my-2 relative z-10">
-                  <div className="font-mono text-center text-lg md:text-xl tracking-wider font-black text-amber-300 select-all" dir="ltr">
-                    {portalSettings.bankCardNumber}
+                  <div className="font-sans text-center text-lg md:text-xl tracking-wider font-black text-amber-300 select-all" dir="ltr">
+                    {toPersianDigits(portalSettings.bankCardNumber)}
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-300 relative z-10 border-t border-white/10 pt-2">
+                <div className="flex items-center justify-between text-[11px] text-slate-300 relative z-10 border-t border-white/10 pt-2 font-sans">
                   <span>صاحب حساب:</span>
-                  <span className="font-bold text-white">{portalSettings.bankAccountOwner || 'مرکز آموزش عالی کوثر کاکی'}</span>
+                  <span className="font-bold text-white font-sans">{toPersianDigits(portalSettings.bankAccountOwner || 'مرکز آموزش عالی کوثر کاکی')}</span>
                 </div>
               </div>
             )}
@@ -306,7 +306,7 @@ export default function PortalFinancial() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-600">شماره حساب بانکی:</span>
                   <button
-                    onClick={() => copyToClipboard(portalSettings.bankAccountNumber, 'acc')}
+                    onClick={() => copyToClipboard(toPersianDigits(portalSettings.bankAccountNumber), 'acc')}
                     className="p-1.5 rounded-lg bg-white hover:bg-slate-200/80 text-slate-700 transition-all text-xs flex items-center gap-1 border border-slate-200"
                     title="کپی شماره حساب"
                   >
@@ -314,12 +314,12 @@ export default function PortalFinancial() {
                     <span>{copiedKey === 'acc' ? 'کپی شد' : 'کپی'}</span>
                   </button>
                 </div>
-                <div className="font-mono text-center text-base font-bold text-slate-800 my-2 select-all" dir="ltr">
-                  {portalSettings.bankAccountNumber}
+                <div className="font-sans text-center text-base font-bold text-slate-800 my-2 select-all" dir="ltr">
+                  {toPersianDigits(portalSettings.bankAccountNumber)}
                 </div>
-                <div className="text-[11px] text-slate-500 border-t border-slate-200/60 pt-2 flex justify-between">
+                <div className="text-[11px] text-slate-500 border-t border-slate-200/60 pt-2 flex justify-between font-sans">
                   <span>نام صاحب حساب:</span>
-                  <span className="font-bold text-slate-700">{portalSettings.bankAccountOwner}</span>
+                  <span className="font-bold text-slate-700 font-sans">{toPersianDigits(portalSettings.bankAccountOwner)}</span>
                 </div>
               </div>
             )}
@@ -330,7 +330,7 @@ export default function PortalFinancial() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-600">شماره شبا (IBAN):</span>
                   <button
-                    onClick={() => copyToClipboard(portalSettings.bankShebaNumber, 'sheba')}
+                    onClick={() => copyToClipboard(toPersianDigits(portalSettings.bankShebaNumber), 'sheba')}
                     className="p-1.5 rounded-lg bg-white hover:bg-slate-200/80 text-slate-700 transition-all text-xs flex items-center gap-1 border border-slate-200"
                     title="کپی شماره شبا"
                   >
@@ -338,8 +338,8 @@ export default function PortalFinancial() {
                     <span>{copiedKey === 'sheba' ? 'کپی شد' : 'کپی'}</span>
                   </button>
                 </div>
-                <div className="font-mono text-center text-xs md:text-sm font-bold text-slate-800 my-2 break-all select-all" dir="ltr">
-                  {portalSettings.bankShebaNumber}
+                <div className="font-sans text-center text-xs md:text-sm font-bold text-slate-800 my-2 break-all select-all" dir="ltr">
+                  {toPersianDigits(portalSettings.bankShebaNumber)}
                 </div>
                 <div className="text-[11px] text-slate-500 border-t border-slate-200/60 pt-2 flex justify-between">
                   <span>نوع حساب:</span>
@@ -401,19 +401,19 @@ export default function PortalFinancial() {
 
                     return (
                       <tr key={receipt.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="p-4">
-                          <div className="font-black text-slate-900 flex items-baseline gap-1">
-                            <span className="text-base text-emerald-700">{rialFormatted}</span>
+                        <td className="p-4 font-sans">
+                          <div className="font-black text-slate-900 flex items-baseline gap-1 font-sans">
+                            <span className="text-base text-emerald-700 font-sans">{rialFormatted}</span>
                             <span className="text-xs text-slate-500 font-normal">ریال</span>
                           </div>
-                          <div className="text-[11px] text-slate-400 font-medium mt-0.5">
-                            معادل: <span className="font-bold text-slate-600">{tomanFormatted}</span> تومان
+                          <div className="text-[11px] text-slate-400 font-medium mt-0.5 font-sans">
+                            معادل: <span className="font-bold text-slate-600 font-sans">{tomanFormatted}</span> تومان
                           </div>
                         </td>
-                        <td className="p-4 font-bold text-slate-700 text-xs">
+                        <td className="p-4 font-bold text-slate-700 text-xs font-sans">
                           {toPersianDigits(receipt.trackingCode)}
                         </td>
-                        <td className="p-4 text-slate-600 text-xs">
+                        <td className="p-4 text-slate-600 text-xs font-sans">
                           {toPersianDigits(receipt.date)}
                         </td>
                         <td className="p-4">
@@ -526,9 +526,9 @@ export default function PortalFinancial() {
                   required
                   value={formattedDisplayAmount}
                   onChange={handleAmountChange}
-                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-2xl pr-12 pl-4 py-3.5 text-xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all text-left"
+                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-2xl pr-12 pl-4 py-3.5 text-xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all text-left font-sans"
                   dir="ltr"
-                  placeholder="25,000,000"
+                  placeholder="۲۵،۰۰۰،۰۰۰"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">
                   ریال

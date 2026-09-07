@@ -1066,7 +1066,7 @@ export const defaultPortalSettings: PortalSettings = {
   financialNoticeText: 'واریز شهریه صرفاً از طریق شماره حساب‌های رسمی مرکز مورد تایید است.',
   bankAccountTitle: 'حساب رسمی مرکز آموزش علمی کاربردی کوثر کاکی',
   bankAccountNumber: '۰۱۰۷۶۵۴۳۲۱۰۰۵',
-  bankShebaNumber: 'IR720170000000107654321005',
+  bankShebaNumber: 'IR۷۲۰۱۷۰۰۰۰۰۰۰۱۰۷۶۵۴۳۲۱۰۰۵',
   bankCardNumber: '۶۰۳۷-۹۹۷۵-۱۲۳۴-۵۶۷۸',
   bankAccountOwner: 'مرکز آموزش عالی علمی کاربردی کوثر کاکی',
   receiptReviewDays: 'حداکثر ۲۴ الی ۴۸ ساعت اداری',

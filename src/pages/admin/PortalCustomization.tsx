@@ -7,6 +7,7 @@ import {
   PortalDepartmentConfig,
   defaultPortalSettings 
 } from '../../lib/storage';
+import { toPersianDigits, toEnglishDigits } from '../../lib/persianNumberHelper';
 import DeleteConfirmModal from '../../components/admin/DeleteConfirmModal';
 import {
   GeneralSectionPreview,
@@ -80,14 +81,33 @@ export default function PortalCustomization() {
     confirmText?: string;
   } | null>(null);
 
+  // Helper to ensure all strings and nested values convert English digits to Persian digits
+  const deepToPersianDigits = <T,>(data: T): T => {
+    if (data === null || data === undefined) return data;
+    if (typeof data === 'string') {
+      return toPersianDigits(data) as unknown as T;
+    }
+    if (Array.isArray(data)) {
+      return data.map(item => deepToPersianDigits(item)) as unknown as T;
+    }
+    if (typeof data === 'object') {
+      const result: any = {};
+      for (const key of Object.keys(data)) {
+        result[key] = deepToPersianDigits((data as any)[key]);
+      }
+      return result;
+    }
+    return data;
+  };
+
   useEffect(() => {
     const current = storage.getPortalSettings();
-    setSettings(current);
+    setSettings(deepToPersianDigits(current));
 
     // Also fetch latest from backend API / DB
     storage.syncPortalSettingsWithDB().then(dbSettings => {
       if (dbSettings) {
-        setSettings(dbSettings);
+        setSettings(deepToPersianDigits(dbSettings));
       }
     });
   }, []);
@@ -103,7 +123,8 @@ export default function PortalCustomization() {
       if (type === 'checkbox') {
         (next as any)[name] = (target as HTMLInputElement).checked;
       } else {
-        (next as any)[name] = value;
+        // Automatically convert typed English digits to Persian digits so editable inputs display Persian digits
+        (next as any)[name] = toPersianDigits(value);
       }
       return next;
     });
@@ -122,7 +143,8 @@ export default function PortalCustomization() {
   const handleRecoveryFieldChange = (field: string, value: any) => {
     setSettings(prev => {
       const next = { ...prev };
-      next.passwordRecovery = { ...next.passwordRecovery, [field]: value };
+      const processed = typeof value === 'string' ? toPersianDigits(value) : value;
+      next.passwordRecovery = { ...next.passwordRecovery, [field]: processed };
       return next;
     });
   };
@@ -135,7 +157,7 @@ export default function PortalCustomization() {
         ...prev.passwordRecovery,
         supportInstructions: [
           ...(prev.passwordRecovery?.supportInstructions || []),
-          newInstructionText.trim()
+          toPersianDigits(newInstructionText.trim())
         ]
       }
     }));
@@ -147,7 +169,7 @@ export default function PortalCustomization() {
     setDeleteConfirmState({
       isOpen: true,
       title: 'حذف مرحله راهنمای پشتیبانی',
-      itemName: itemText ? `مرحله ${index + 1}: ${itemText}` : `مرحله ${index + 1}`,
+      itemName: itemText ? `مرحله ${toPersianDigits(index + 1)}: ${itemText}` : `مرحله ${toPersianDigits(index + 1)}`,
       onConfirm: () => {
         setSettings(prev => ({
           ...prev,
@@ -166,7 +188,7 @@ export default function PortalCustomization() {
       ...prev,
       passwordRecovery: {
         ...prev.passwordRecovery,
-        supportInstructions: (prev.passwordRecovery?.supportInstructions || []).map((item, i) => i === index ? val : item)
+        supportInstructions: (prev.passwordRecovery?.supportInstructions || []).map((item, i) => i === index ? toPersianDigits(val) : item)
       }
     }));
   };
@@ -190,7 +212,7 @@ export default function PortalCustomization() {
       onConfirm: async () => {
         setIsSaving(true);
         const resetVal = storage.resetPortalSettings();
-        setSettings(resetVal);
+        setSettings(deepToPersianDigits(resetVal));
         await storage.savePortalSettingsToDB(resetVal);
         setIsSaving(false);
         setDeleteConfirmState(null);
@@ -215,12 +237,17 @@ export default function PortalCustomization() {
 
   const handleSaveAnnouncement = (ann: PortalAnnouncement) => {
     if (!ann.title.trim()) return;
-    const exists = settings.announcements.some(a => a.id === ann.id);
+    const formattedAnn: PortalAnnouncement = {
+      ...ann,
+      title: toPersianDigits(ann.title),
+      content: toPersianDigits(ann.content)
+    };
+    const exists = settings.announcements.some(a => a.id === formattedAnn.id);
     let updated: PortalAnnouncement[];
     if (exists) {
-      updated = settings.announcements.map(a => a.id === ann.id ? ann : a);
+      updated = settings.announcements.map(a => a.id === formattedAnn.id ? formattedAnn : a);
     } else {
-      updated = [...settings.announcements, ann];
+      updated = [...settings.announcements, formattedAnn];
     }
     setSettings(prev => ({ ...prev, announcements: updated }));
     setIsAnnModalOpen(false);
@@ -266,9 +293,10 @@ export default function PortalCustomization() {
 
   // --- Department Toggle & Edit ---
   const handleDepartmentChange = (id: string, field: 'name' | 'description' | 'isActive', value: any) => {
+    const processedVal = typeof value === 'string' ? toPersianDigits(value) : value;
     const updated = settings.departments.map(d => {
       if (d.id === id) {
-        return { ...d, [field]: value };
+        return { ...d, [field]: processedVal };
       }
       return d;
     });
@@ -290,12 +318,18 @@ export default function PortalCustomization() {
 
   const handleSaveFaq = (faq: PortalFAQ) => {
     if (!faq.question.trim() || !faq.answer.trim()) return;
-    const exists = settings.faqs.some(f => f.id === faq.id);
+    const formattedFaq: PortalFAQ = {
+      ...faq,
+      question: toPersianDigits(faq.question),
+      answer: toPersianDigits(faq.answer),
+      category: toPersianDigits(faq.category)
+    };
+    const exists = settings.faqs.some(f => f.id === formattedFaq.id);
     let updated: PortalFAQ[];
     if (exists) {
-      updated = settings.faqs.map(f => f.id === faq.id ? faq : f);
+      updated = settings.faqs.map(f => f.id === formattedFaq.id ? formattedFaq : f);
     } else {
-      updated = [...settings.faqs, faq];
+      updated = [...settings.faqs, formattedFaq];
     }
     setSettings(prev => ({ ...prev, faqs: updated }));
     setIsFaqModalOpen(false);
@@ -447,8 +481,8 @@ export default function PortalCustomization() {
           >
             <Bell className="w-4 h-4" />
             اطلاعیه‌ها و هشدارهای پرتال
-            <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
-              {settings.announcements.length}
+            <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold font-sans">
+              {toPersianDigits(settings.announcements.length)}
             </span>
           </button>
 
@@ -502,8 +536,8 @@ export default function PortalCustomization() {
           >
             <HelpCircle className="w-4 h-4" />
             سوالات متداول (FAQ)
-            <span className="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full font-bold">
-              {settings.faqs.length}
+            <span className="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full font-bold font-sans">
+              {toPersianDigits(settings.faqs.length)}
             </span>
           </button>
         </div>
@@ -877,8 +911,8 @@ export default function PortalCustomization() {
             <div className="bg-slate-50/70 rounded-3xl p-6 border border-slate-200/80 space-y-5">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-xs">
-                    ۱
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-xs font-sans">
+                    {toPersianDigits(1)}
                   </div>
                   <div>
                     <h4 className="font-black text-sm text-slate-800">تنظیمات و شخصی‌سازی پلن ۱ (سامانه پیامکی و OTP)</h4>
@@ -896,7 +930,7 @@ export default function PortalCustomization() {
                   <select
                     value={settings.passwordRecovery?.smsOtpCodeLength || 5}
                     onChange={e => handleRecoveryFieldChange('smsOtpCodeLength', parseInt(e.target.value, 10))}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                   >
                     <option value={4}>۴ رقمی (ساده)</option>
                     <option value={5}>۵ رقمی (استاندارد کوثر کاکی)</option>
@@ -907,29 +941,35 @@ export default function PortalCustomization() {
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">مدت اعتبار کد تایید پیامک (ثانیه)</label>
                   <input
-                    type="number"
-                    min={30}
-                    max={600}
-                    value={settings.passwordRecovery?.smsOtpExpirySeconds || 120}
-                    onChange={e => handleRecoveryFieldChange('smsOtpExpirySeconds', parseInt(e.target.value, 10) || 120)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                    placeholder="120"
+                    type="text"
+                    inputMode="numeric"
+                    value={toPersianDigits(settings.passwordRecovery?.smsOtpExpirySeconds ?? 120)}
+                    onChange={e => {
+                      const digits = toEnglishDigits(e.target.value);
+                      handleRecoveryFieldChange('smsOtpExpirySeconds', digits ? parseInt(digits, 10) : 0);
+                    }}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    placeholder="۱۲۰"
                   />
-                  <span className="text-[10px] text-slate-500 mt-1 block">معادل ۲ دقیقه (تایمر معکوس برای ارسال مجدد)</span>
+                  <span className="text-[10px] text-slate-500 mt-1 block font-sans">
+                    معادل {toPersianDigits(Math.round((settings.passwordRecovery?.smsOtpExpirySeconds || 120) / 60))} دقیقه (تایمر معکوس برای ارسال مجدد)
+                  </span>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">حداقل طول رمز عبور جدید</label>
                   <input
-                    type="number"
-                    min={4}
-                    max={20}
-                    value={settings.passwordRecovery?.smsMinPasswordLength || 6}
-                    onChange={e => handleRecoveryFieldChange('smsMinPasswordLength', parseInt(e.target.value, 10) || 6)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                    placeholder="6"
+                    type="text"
+                    inputMode="numeric"
+                    value={toPersianDigits(settings.passwordRecovery?.smsMinPasswordLength ?? 6)}
+                    onChange={e => {
+                      const digits = toEnglishDigits(e.target.value);
+                      handleRecoveryFieldChange('smsMinPasswordLength', digits ? parseInt(digits, 10) : 0);
+                    }}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    placeholder="۶"
                   />
-                  <span className="text-[10px] text-slate-500 mt-1 block">تعداد کاراکترهای مجاز برای رمز عبور انتخابی</span>
+                  <span className="text-[10px] text-slate-500 mt-1 block font-sans">تعداد کاراکترهای مجاز برای رمز عبور انتخابی</span>
                 </div>
 
                 <div className="md:col-span-2">
@@ -938,7 +978,7 @@ export default function PortalCustomization() {
                     type="text"
                     value={settings.passwordRecovery?.smsSenderName || ''}
                     onChange={e => handleRecoveryFieldChange('smsSenderName', e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                     placeholder="مرکز آموزش علمی کاربردی کوثر کاکی"
                   />
                 </div>
@@ -959,7 +999,7 @@ export default function PortalCustomization() {
                 <div className="md:col-span-3">
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold text-slate-700">الگوی متن پیامک ارسالی</label>
-                    <span className="text-[11px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded font-bold">
+                    <span className="text-[11px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded font-bold font-sans">
                       از تگ <span dir="ltr" className="inline-block font-mono bg-emerald-200/50 px-1 rounded mx-1">{"{code}"}</span> برای جایگذاری کد تایید استفاده کنید
                     </span>
                   </div>
@@ -967,7 +1007,7 @@ export default function PortalCustomization() {
                     rows={3}
                     value={settings.passwordRecovery?.smsPatternTemplate || ''}
                     onChange={e => handleRecoveryFieldChange('smsPatternTemplate', e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-medium text-slate-800 font-sans focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                     placeholder="کد تایید بازیابی رمز عبور میز خدمت مرکز کوثر کاکی: {code}"
                   />
                 </div>
@@ -978,8 +1018,8 @@ export default function PortalCustomization() {
             <div className="bg-slate-50/70 rounded-3xl p-6 border border-slate-200/80 space-y-5">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-800 flex items-center justify-center font-black text-xs">
-                    ۲
+                  <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-800 flex items-center justify-center font-black text-xs font-sans">
+                    {toPersianDigits(2)}
                   </div>
                   <div>
                     <h4 className="font-black text-sm text-slate-800">تنظیمات و شخصی‌سازی پلن ۲ (باکس راهنما و تماس با کارشناس فنی)</h4>
@@ -998,7 +1038,7 @@ export default function PortalCustomization() {
                     type="text"
                     value={settings.passwordRecovery?.supportBoxTitle || ''}
                     onChange={e => handleRecoveryFieldChange('supportBoxTitle', e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     placeholder="بازیابی رمز عبور از طریق کارشناس فنی"
                   />
                 </div>
@@ -1009,7 +1049,7 @@ export default function PortalCustomization() {
                     type="text"
                     value={settings.passwordRecovery?.supportExpertName || ''}
                     onChange={e => handleRecoveryFieldChange('supportExpertName', e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     placeholder="مهندس زارعی (کارشناس فناوری اطلاعات و سامانه‌های آموزشی)"
                   />
                 </div>
@@ -1020,7 +1060,7 @@ export default function PortalCustomization() {
                     rows={2}
                     value={settings.passwordRecovery?.supportBoxDescription || ''}
                     onChange={e => handleRecoveryFieldChange('supportBoxDescription', e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-medium text-slate-800 font-sans focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     placeholder="دانشجوی گرامی، جهت ارتقای امنیت و حفظ محرمانگی پرونده تحصیلی، تغییر و بازیابی رمز عبور توسط کارشناس پشتیبانی فنی و اداره آموزش مرکز انجام می‌پذیرد."
                   />
                 </div>
@@ -1029,11 +1069,10 @@ export default function PortalCustomization() {
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">شماره تلفن ثابت و داخلی</label>
                   <input
                     type="text"
-                    value={settings.passwordRecovery?.supportExpertPhone || ''}
+                    value={toPersianDigits(settings.passwordRecovery?.supportExpertPhone || '')}
                     onChange={e => handleRecoveryFieldChange('supportExpertPhone', e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-left"
-                    dir="ltr"
-                    placeholder="077-35320000 (داخلی ۱۰۴)"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    placeholder="۰۷۷-۳۵۳۲۰۰۰۰ (داخلی ۱۰۴)"
                   />
                 </div>
 
@@ -1041,11 +1080,10 @@ export default function PortalCustomization() {
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">شماره تلفن همراه یا خط پیام‌رسان</label>
                   <input
                     type="text"
-                    value={settings.passwordRecovery?.supportExpertMobile || ''}
+                    value={toPersianDigits(settings.passwordRecovery?.supportExpertMobile || '')}
                     onChange={e => handleRecoveryFieldChange('supportExpertMobile', e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-left"
-                    dir="ltr"
-                    placeholder="09171700000"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    placeholder="۰۹۱۷۱۷۰۰۰۰۰"
                   />
                 </div>
 
@@ -1053,9 +1091,9 @@ export default function PortalCustomization() {
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">ساعات کاری و پاسخگویی</label>
                   <input
                     type="text"
-                    value={settings.passwordRecovery?.supportExpertHours || ''}
+                    value={toPersianDigits(settings.passwordRecovery?.supportExpertHours || '')}
                     onChange={e => handleRecoveryFieldChange('supportExpertHours', e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     placeholder="شنبه تا چهارشنبه از ساعت ۰۸:۰۰ الی ۱۴:۰۰"
                   />
                 </div>
@@ -1081,14 +1119,14 @@ export default function PortalCustomization() {
                   <div className="space-y-2">
                     {(settings.passwordRecovery?.supportInstructions || []).map((instruction, idx) => (
                       <div key={idx} className="flex items-center gap-2 bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-800 font-black text-xs flex items-center justify-center shrink-0">
-                          {idx + 1}
+                        <span className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-800 font-black text-xs flex items-center justify-center shrink-0 font-sans">
+                          {toPersianDigits(idx + 1)}
                         </span>
                         <input
                           type="text"
                           value={instruction}
                           onChange={e => handleEditInstruction(idx, e.target.value)}
-                          className="flex-1 bg-transparent border-0 text-xs font-medium text-slate-800 focus:ring-0 focus:outline-none"
+                          className="flex-1 bg-transparent border-0 text-xs font-medium text-slate-800 focus:ring-0 focus:outline-none font-sans"
                         />
                         <button
                           type="button"
@@ -1109,7 +1147,7 @@ export default function PortalCustomization() {
                       onChange={e => setNewInstructionText(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddInstruction())}
                       placeholder="متن مرحله یا دستورالعمل جدید را وارد کنید..."
-                      className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 font-sans focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     />
                     <button
                       type="button"
@@ -1145,8 +1183,8 @@ export default function PortalCustomization() {
                           <p className="text-[11px] text-slate-400 font-medium">احراز هویت پیامکی و تعیین رمز عبور دلخواه</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                        مرحله ۱ از ۳
+                      <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-sans">
+                        مرحله {toPersianDigits(1)} از {toPersianDigits(3)}
                       </span>
                     </div>
 
@@ -1157,8 +1195,7 @@ export default function PortalCustomization() {
                           type="text"
                           disabled
                           placeholder="مثال: ۱۲۳۴۵۶۷۸۹۰"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-500 text-left"
-                          dir="ltr"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-500 font-sans"
                         />
                       </div>
                       <div>
@@ -1166,9 +1203,8 @@ export default function PortalCustomization() {
                         <input
                           type="text"
                           disabled
-                          placeholder="0917..."
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-500 text-left"
-                          dir="ltr"
+                          placeholder="۰۹۱۷..."
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-500 font-sans"
                         />
                       </div>
 
@@ -1177,8 +1213,8 @@ export default function PortalCustomization() {
                           <Send className="w-3.5 h-3.5 text-emerald-600" />
                           <span>قالب پیامک ارسالی به دانشجو:</span>
                         </div>
-                        <p className="text-[11px] font-medium leading-relaxed bg-white/70 p-2 rounded-xl border border-emerald-200/50">
-                          {settings.passwordRecovery?.smsPatternTemplate?.replace('{code}', '۵۴۸۹۲') || 'کد تایید: ۵۴۸۹۲'}
+                        <p className="text-[11px] font-medium leading-relaxed bg-white/70 p-2 rounded-xl border border-emerald-200/50 font-sans">
+                          {toPersianDigits(settings.passwordRecovery?.smsPatternTemplate?.replace('{code}', '۵۴۸۹۲') || 'کد تایید: ۵۴۸۹۲')}
                         </p>
                       </div>
 
@@ -1186,10 +1222,10 @@ export default function PortalCustomization() {
                         <button
                           type="button"
                           disabled
-                          className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-emerald-600 shadow-md shadow-emerald-500/20"
+                          className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-emerald-600 shadow-md shadow-emerald-500/20 font-sans"
                         >
                           <Send className="w-3.5 h-3.5" />
-                          ارسال کد تایید پیامکی ({settings.passwordRecovery?.smsOtpCodeLength || 5} رقم)
+                          ارسال کد تایید پیامکی ({toPersianDigits(settings.passwordRecovery?.smsOtpCodeLength || 5)} رقم)
                         </button>
                       </div>
                     </div>
@@ -1209,14 +1245,14 @@ export default function PortalCustomization() {
                           <p className="text-[11px] text-slate-400 font-medium">پشتیبانی و راهنمایی مرکز آموزش کوثر کاکی</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-sans">
                         تماس مستقیم
                       </span>
                     </div>
 
                     <div className="bg-indigo-50/70 p-3.5 rounded-2xl border border-indigo-100 text-xs text-indigo-950 space-y-1">
-                      <p className="text-[11px] leading-relaxed">
-                        {settings.passwordRecovery?.supportBoxDescription}
+                      <p className="text-[11px] leading-relaxed font-sans">
+                        {toPersianDigits(settings.passwordRecovery?.supportBoxDescription || '')}
                       </p>
                     </div>
 
@@ -1228,17 +1264,17 @@ export default function PortalCustomization() {
 
                       <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
                         <span className="text-[10px] text-slate-400 font-bold block mb-1">شماره تماس مستقیم:</span>
-                        <span className="font-black text-blue-700 text-xs" dir="ltr">{settings.passwordRecovery?.supportExpertPhone}</span>
+                        <span className="font-black text-blue-700 text-xs font-sans">{toPersianDigits(settings.passwordRecovery?.supportExpertPhone)}</span>
                       </div>
 
                       <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
                         <span className="text-[10px] text-slate-400 font-bold block mb-1">شماره همراه کارشناس:</span>
-                        <span className="font-black text-indigo-700 text-xs" dir="ltr">{settings.passwordRecovery?.supportExpertMobile}</span>
+                        <span className="font-black text-indigo-700 text-xs font-sans">{toPersianDigits(settings.passwordRecovery?.supportExpertMobile)}</span>
                       </div>
 
                       <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
                         <span className="text-[10px] text-slate-400 font-bold block mb-1">ساعات پاسخگویی:</span>
-                        <span className="font-bold text-slate-700 text-xs">{settings.passwordRecovery?.supportExpertHours}</span>
+                        <span className="font-bold text-slate-700 text-xs font-sans">{toPersianDigits(settings.passwordRecovery?.supportExpertHours)}</span>
                       </div>
                     </div>
 
@@ -1248,10 +1284,10 @@ export default function PortalCustomization() {
                         <ul className="space-y-1.5 text-[11px] text-amber-800 font-medium">
                           {settings.passwordRecovery.supportInstructions.map((ins, i) => (
                             <li key={i} className="flex items-start gap-1.5">
-                              <span className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">
-                                {i + 1}
+                              <span className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5 font-sans">
+                                {toPersianDigits(i + 1)}
                               </span>
-                              <span>{ins}</span>
+                              <span className="font-sans">{toPersianDigits(ins)}</span>
                             </li>
                           ))}
                         </ul>
@@ -1296,12 +1332,12 @@ export default function PortalCustomization() {
                     className={`p-4 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${typeColors[ann.type] || 'bg-slate-50 border-slate-200 text-slate-900'} ${!ann.isActive ? 'opacity-50' : ''}`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="mt-0.5 w-6 h-6 rounded-full bg-white/70 flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-                        {idx + 1}
+                      <div className="mt-0.5 w-6 h-6 rounded-full bg-white/70 flex items-center justify-center font-bold text-xs shrink-0 shadow-sm font-sans">
+                        {toPersianDigits(idx + 1)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-black text-sm">{ann.title}</h4>
+                          <h4 className="font-black text-sm font-sans">{toPersianDigits(ann.title)}</h4>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/80 border">
                             {ann.type === 'success' ? 'موفقیت / سبز' : ann.type === 'warning' ? 'هشدار / زرد' : ann.type === 'danger' ? 'فوری / قرمز' : 'اطلاع‌رسانی / آبی'}
                           </span>
@@ -1311,7 +1347,7 @@ export default function PortalCustomization() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs leading-relaxed opacity-90">{ann.content}</p>
+                        <p className="text-xs leading-relaxed opacity-90 font-sans">{toPersianDigits(ann.content)}</p>
                       </div>
                     </div>
 
@@ -1538,10 +1574,9 @@ export default function PortalCustomization() {
                 <input
                   type="text"
                   name="bankCardNumber"
-                  value={settings.bankCardNumber}
+                  value={toPersianDigits(settings.bankCardNumber)}
                   onChange={handleInputChange}
-                  dir="ltr"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 text-left focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   placeholder="۶۰۳۷-۹۹۷۵-۱۲۳۴-۵۶۷۸"
                 />
               </div>
@@ -1551,10 +1586,9 @@ export default function PortalCustomization() {
                 <input
                   type="text"
                   name="bankAccountNumber"
-                  value={settings.bankAccountNumber}
+                  value={toPersianDigits(settings.bankAccountNumber)}
                   onChange={handleInputChange}
-                  dir="ltr"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 text-left focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   placeholder="۰۱۰۷۶۵۴۳۲۱۰۰۵"
                 />
               </div>
@@ -1564,11 +1598,10 @@ export default function PortalCustomization() {
                 <input
                   type="text"
                   name="bankShebaNumber"
-                  value={settings.bankShebaNumber}
+                  value={toPersianDigits(settings.bankShebaNumber)}
                   onChange={handleInputChange}
-                  dir="ltr"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 text-left focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  placeholder="IR720170000000107654321005"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 font-sans focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  placeholder="IR۷۲۰۱۷۰۰۰۰۰۰۰۱۰۷۶۵۴۳۲۱۰۰۵"
                 />
               </div>
             </div>
@@ -1594,9 +1627,9 @@ export default function PortalCustomization() {
                 <input
                   type="text"
                   name="supportPhone"
-                  value={settings.supportPhone}
+                  value={toPersianDigits(settings.supportPhone)}
                   onChange={handleInputChange}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium text-slate-800 font-sans focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   placeholder="۰۷۷-۳۵۳۲۰۰۰۰"
                 />
               </div>
@@ -1606,9 +1639,9 @@ export default function PortalCustomization() {
                 <input
                   type="text"
                   name="supportMobile"
-                  value={settings.supportMobile}
+                  value={toPersianDigits(settings.supportMobile)}
                   onChange={handleInputChange}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium text-slate-800 font-sans focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   placeholder="۰۹۱۷۰۰۰۰۰۰۰"
                 />
               </div>
@@ -1644,9 +1677,9 @@ export default function PortalCustomization() {
                 <input
                   type="text"
                   name="supportHours"
-                  value={settings.supportHours}
+                  value={toPersianDigits(settings.supportHours)}
                   onChange={handleInputChange}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium text-slate-800 font-sans focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   placeholder="شنبه تا چهارشنبه: ۰۸:۰۰ لغایت ۱۴:۰۰"
                 />
               </div>
@@ -1682,14 +1715,14 @@ export default function PortalCustomization() {
                   className={`p-4 rounded-2xl border border-slate-200 bg-slate-50 flex flex-col md:flex-row md:items-start justify-between gap-4 transition-all ${!faq.isActive ? 'opacity-50' : ''}`}
                 >
                   <div className="flex items-start gap-3 flex-grow">
-                    <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
-                      {idx + 1}
+                    <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 font-sans">
+                      {toPersianDigits(idx + 1)}
                     </div>
                     <div className="space-y-1.5 flex-grow">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-sm text-slate-800">{faq.question}</h4>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-slate-600 border">
-                          {faq.category}
+                        <h4 className="font-bold text-sm text-slate-800 font-sans">{toPersianDigits(faq.question)}</h4>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-slate-600 border font-sans">
+                          {toPersianDigits(faq.category)}
                         </span>
                         {!faq.isActive && (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">
@@ -1697,8 +1730,8 @@ export default function PortalCustomization() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-600 leading-relaxed bg-white p-3 rounded-xl border border-slate-100">
-                        {faq.answer}
+                      <p className="text-xs text-slate-600 leading-relaxed bg-white p-3 rounded-xl border border-slate-100 font-sans">
+                        {toPersianDigits(faq.answer)}
                       </p>
                     </div>
                   </div>
@@ -1790,9 +1823,9 @@ export default function PortalCustomization() {
                 <label className="block font-bold text-slate-700 mb-1.5">عنوان اطلاعیه</label>
                 <input
                   type="text"
-                  value={editingAnnouncement.title}
-                  onChange={e => setEditingAnnouncement({ ...editingAnnouncement, title: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800"
+                  value={toPersianDigits(editingAnnouncement.title)}
+                  onChange={e => setEditingAnnouncement({ ...editingAnnouncement, title: toPersianDigits(e.target.value) })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 font-sans"
                   placeholder="مثال: اطلاعیه مهم امور مالی و پرداخت شهریه"
                 />
               </div>
@@ -1802,7 +1835,7 @@ export default function PortalCustomization() {
                 <select
                   value={editingAnnouncement.type}
                   onChange={e => setEditingAnnouncement({ ...editingAnnouncement, type: e.target.value as any })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 font-sans"
                 >
                   <option value="info">اطلاع‌رسانی عمومی (آبی)</option>
                   <option value="success">دسترسی و تاییدیه (سبز)</option>
@@ -1815,9 +1848,9 @@ export default function PortalCustomization() {
                 <label className="block font-bold text-slate-700 mb-1.5">متن کامل توضیحات</label>
                 <textarea
                   rows={4}
-                  value={editingAnnouncement.content}
-                  onChange={e => setEditingAnnouncement({ ...editingAnnouncement, content: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800"
+                  value={toPersianDigits(editingAnnouncement.content)}
+                  onChange={e => setEditingAnnouncement({ ...editingAnnouncement, content: toPersianDigits(e.target.value) })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-sans"
                   placeholder="متن کامل اطلاعیه..."
                 />
               </div>
@@ -1874,9 +1907,9 @@ export default function PortalCustomization() {
                 <label className="block font-bold text-slate-700 mb-1.5">عنوان پرسش</label>
                 <input
                   type="text"
-                  value={editingFaq.question}
-                  onChange={e => setEditingFaq({ ...editingFaq, question: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800"
+                  value={toPersianDigits(editingFaq.question)}
+                  onChange={e => setEditingFaq({ ...editingFaq, question: toPersianDigits(e.target.value) })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 font-sans"
                   placeholder="مثال: نحوه دریافت گواهی اشتغال به تحصیل چگونه است؟"
                 />
               </div>
@@ -1885,9 +1918,9 @@ export default function PortalCustomization() {
                 <label className="block font-bold text-slate-700 mb-1.5">دسته‌بندی موضوعی</label>
                 <input
                   type="text"
-                  value={editingFaq.category}
-                  onChange={e => setEditingFaq({ ...editingFaq, category: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-800"
+                  value={toPersianDigits(editingFaq.category)}
+                  onChange={e => setEditingFaq({ ...editingFaq, category: toPersianDigits(e.target.value) })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-800 font-sans"
                   placeholder="مثال: آموزشی، مالی، نظام وظیفه، فارغ‌التحصیلی"
                 />
               </div>
@@ -1896,9 +1929,9 @@ export default function PortalCustomization() {
                 <label className="block font-bold text-slate-700 mb-1.5">پاسخ تشریحی و راهنمایی</label>
                 <textarea
                   rows={4}
-                  value={editingFaq.answer}
-                  onChange={e => setEditingFaq({ ...editingFaq, answer: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800"
+                  value={toPersianDigits(editingFaq.answer)}
+                  onChange={e => setEditingFaq({ ...editingFaq, answer: toPersianDigits(e.target.value) })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-sans"
                   placeholder="پاسخ کامل و شفاف..."
                 />
               </div>

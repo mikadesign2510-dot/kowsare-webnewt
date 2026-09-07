@@ -348,7 +348,7 @@ export default function PortalDashboard() {
             </div>
             <div>
               <p className="text-[11px] text-slate-400 font-bold">ساعات پاسخگویی</p>
-              <p className="text-xs font-bold text-slate-800">{portalSettings.supportHours}</p>
+              <p className="text-xs font-bold text-slate-800 font-sans">{toPersianDigits(portalSettings.supportHours)}</p>
             </div>
           </div>
         </div>
@@ -366,13 +366,13 @@ export default function PortalDashboard() {
               <div key={faq.id} className="p-4 rounded-2xl bg-slate-50/80 border border-slate-100 space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-600" />
-                  <h4 className="font-bold text-xs md:text-sm text-slate-800">{faq.question}</h4>
-                  <span className="text-[10px] bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">
-                    {faq.category}
+                  <h4 className="font-bold text-xs md:text-sm text-slate-800 font-sans">{toPersianDigits(faq.question)}</h4>
+                  <span className="text-[10px] bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold font-sans">
+                    {toPersianDigits(faq.category)}
                   </span>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed pr-4">
-                  {faq.answer}
+                <p className="text-xs text-slate-600 leading-relaxed pr-4 font-sans">
+                  {toPersianDigits(faq.answer)}
                 </p>
               </div>
             ))}

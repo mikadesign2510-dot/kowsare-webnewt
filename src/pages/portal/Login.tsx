@@ -872,7 +872,7 @@ export default function PortalLogin() {
                       <span className="text-[10px] text-slate-400 font-bold block mb-1">شماره تلفن مستقیم:</span>
                       <a 
                         href={`tel:${portalSettings.passwordRecovery?.supportExpertPhone || portalSettings.supportPhone}`}
-                        className="font-black text-blue-600 hover:underline text-xs flex items-center gap-1.5"
+                        className="font-black text-blue-600 hover:underline text-xs flex items-center gap-1.5 font-sans"
                         dir="ltr"
                       >
                         <PhoneCall className="w-3.5 h-3.5 text-blue-500 shrink-0" />
@@ -882,15 +882,15 @@ export default function PortalLogin() {
 
                     <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
                       <span className="text-[10px] text-slate-400 font-bold block mb-1">شماره همراه کارشناس:</span>
-                      <span className="font-black text-indigo-700 text-xs" dir="ltr">
+                      <span className="font-black text-indigo-700 text-xs font-sans" dir="ltr">
                         {toPersianDigits(portalSettings.passwordRecovery?.supportExpertMobile || '۰۹۱۷۱۷۰۰۰۰۰')}
                       </span>
                     </div>
 
                     <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
                       <span className="text-[10px] text-slate-400 font-bold block mb-1">ساعات پاسخگویی:</span>
-                      <span className="font-bold text-slate-700 text-xs">
-                        {portalSettings.passwordRecovery?.supportExpertHours || 'شنبه تا چهارشنبه ۰۸:۰۰ الی ۱۴:۰۰'}
+                      <span className="font-bold text-slate-700 text-xs font-sans">
+                        {toPersianDigits(portalSettings.passwordRecovery?.supportExpertHours || 'شنبه تا چهارشنبه ۰۸:۰۰ الی ۱۴:۰۰')}
                       </span>
                     </div>
 
@@ -898,7 +898,7 @@ export default function PortalLogin() {
                       <div className="sm:col-span-2 bg-slate-50 p-3 rounded-2xl border border-slate-100 flex items-center justify-between">
                         <div>
                           <span className="text-[10px] text-slate-400 font-bold block">شناسه پیام‌رسان (ایتا / تلگرام):</span>
-                          <span className="font-bold text-slate-700 text-xs" dir="ltr">
+                          <span className="font-bold text-slate-700 text-xs font-sans" dir="ltr">
                             @{portalSettings.passwordRecovery.supportMessengerChannel}
                           </span>
                         </div>
@@ -916,13 +916,13 @@ export default function PortalLogin() {
                         <HelpCircle className="w-3.5 h-3.5 text-amber-700" />
                         مراحل و دستورالعمل بازیابی رمز:
                       </span>
-                      <ul className="space-y-1.5 text-[11px] text-amber-800 font-medium">
+                      <ul className="space-y-1.5 text-[11px] text-amber-800 font-medium font-sans">
                         {portalSettings.passwordRecovery.supportInstructions.map((ins, i) => (
                           <li key={i} className="flex items-start gap-2">
-                            <span className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">
+                            <span className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5 font-sans">
                               {toPersianDigits(i + 1)}
                             </span>
-                            <span>{ins}</span>
+                            <span className="font-sans">{toPersianDigits(ins)}</span>
                           </li>
                         ))}
                       </ul>

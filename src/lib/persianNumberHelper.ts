@@ -128,10 +128,10 @@ export function formatRialToWords(rialAmount: string | number | undefined | null
   const tomanRemainder = rialBig % 10n;
 
   const rialFormatted = formatPersianDigitSeparators(clean, '،');
-  const tomanFormatted = formatPersianDigitSeparators(tomanBig.toString(), '،') + (tomanRemainder > 0n ? `.${tomanRemainder}` : '');
+  const tomanFormatted = formatPersianDigitSeparators(tomanBig.toString(), '،') + (tomanRemainder > 0n ? `.${toPersianDigits(tomanRemainder.toString())}` : '');
 
   const rialWords = numberToPersianWords(clean) + ' ریال';
-  const tomanWords = numberToPersianWords(tomanBig.toString()) + (tomanRemainder > 0n ? ` و ${tomanRemainder} ریال` : ' تومان');
+  const tomanWords = numberToPersianWords(tomanBig.toString()) + (tomanRemainder > 0n ? ` و ${toPersianDigits(tomanRemainder.toString())} ریال` : ' تومان');
 
   return {
     rialFormatted,
