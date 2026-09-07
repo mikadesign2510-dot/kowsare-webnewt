@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 // مسیر ذخیره‌سازی دائمی اطلاعات در سرور محلی
 const DATA_DIR = path.join(process.cwd(), 'data');
