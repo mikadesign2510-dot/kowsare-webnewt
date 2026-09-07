@@ -1,31 +1,76 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { storage, NewsItem } from '../lib/storage';
 import { 
   Calendar, ArrowRight, Share2, Tag, Eye, Clock, 
   User, Check, Download, FileText, Sparkles, ChevronLeft, 
-  Layers, ExternalLink, Image as ImageIcon
+  Layers, ExternalLink, Image as ImageIcon, Printer,
+  Bookmark, BookmarkCheck, ChevronRight, X, Maximize2,
+  Copy, ArrowLeftRight
 } from 'lucide-react';
 
 export default function NewsDetail() {
   const { id } = useParams<{ id: string }>();
   const [newsItem, setNewsItem] = useState<NewsItem | undefined>(undefined);
+  const [allNews, setAllNews] = useState<NewsItem[]>([]);
   const [copied, setCopied] = useState(false);
-  const [selectedGalleryImg, setSelectedGalleryImg] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [newsAlbum, setNewsAlbum] = useState<any>(null);
+  
+  // Useful reader features
+  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const item = storage.getNews().find((n) => n.id === Number(id));
+    const published = storage.getPublishedNews();
+    setAllNews(published);
+
+    const item = published.find((n) => n.id === Number(id)) || storage.getNews().find((n) => n.id === Number(id));
     if (item) {
       setNewsItem(item);
       storage.incrementNewsViews(item.id);
       
       const album = storage.getAlbums().find((a) => a.newsId === item.id);
       setNewsAlbum(album || null);
+
+      try {
+        const saved = JSON.parse(localStorage.getItem('kowsar_saved_news') || '[]');
+        setIsBookmarked(saved.includes(item.id));
+      } catch {
+        setIsBookmarked(false);
+      }
     }
   }, [id]);
+
+  // Toast Helper
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Toggle Bookmark
+  const toggleBookmark = () => {
+    if (!newsItem) return;
+    try {
+      const saved: number[] = JSON.parse(localStorage.getItem('kowsar_saved_news') || '[]');
+      let updated: number[];
+      if (saved.includes(newsItem.id)) {
+        updated = saved.filter(i => i !== newsItem.id);
+        setIsBookmarked(false);
+        showToast('خبر از فهرست نشان‌شده‌ها حذف شد');
+      } else {
+        updated = [...saved, newsItem.id];
+        setIsBookmarked(true);
+        showToast('خبر به فهرست نشان‌شده‌ها افزوده شد');
+      }
+      localStorage.setItem('kowsar_saved_news', JSON.stringify(updated));
+    } catch {
+      showToast('خطا در ذخیره‌سازی');
+    }
+  };
 
   const handleShare = () => {
     if (navigator.share) {
@@ -37,9 +82,56 @@ export default function NewsDetail() {
     } else {
       navigator.clipboard.writeText(window.location.href);
       setCopied(true);
+      showToast('لینک خبر کپی شد');
       setTimeout(() => setCopied(false), 2500);
     }
   };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // Keyboard navigation for Lightbox
+  const allImages = useMemo(() => {
+    if (!newsItem) return [];
+    return [newsItem.image, ...(newsItem.gallery || [])].filter(Boolean);
+  }, [newsItem]);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxIndex(null);
+      if (e.key === 'ArrowRight') setLightboxIndex(prev => (prev !== null && prev > 0 ? prev - 1 : allImages.length - 1));
+      if (e.key === 'ArrowLeft') setLightboxIndex(prev => (prev !== null && prev < allImages.length - 1 ? prev + 1 : 0));
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxIndex, allImages]);
+
+  // Social share link generator
+  const getSocialShare = (type: 'eitaa' | 'telegram' | 'bale' | 'whatsapp') => {
+    if (!newsItem) return '#';
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(newsItem.title);
+    switch (type) {
+      case 'eitaa': return `https://eitaa.com/share/url?url=${url}&text=${text}`;
+      case 'telegram': return `https://t.me/share/url?url=${url}&text=${text}`;
+      case 'bale': return `https://ble.ir/share/url?url=${url}&text=${text}`;
+      case 'whatsapp': return `https://api.whatsapp.com/send?text=${text}%20${url}`;
+    }
+  };
+
+  // Previous and Next news
+  const { prevNews, nextNews, relatedNews } = useMemo(() => {
+    if (!newsItem || allNews.length === 0) return { prevNews: null, nextNews: null, relatedNews: [] };
+    const idx = allNews.findIndex(n => n.id === newsItem.id);
+    const prev = idx > 0 ? allNews[idx - 1] : null;
+    const next = idx < allNews.length - 1 ? allNews[idx + 1] : null;
+    const related = allNews
+      .filter(n => n.id !== newsItem.id && (n.category === newsItem.category || n.isPinned))
+      .slice(0, 3);
+    return { prevNews: prev, nextNews: next, relatedNews: related };
+  }, [newsItem, allNews]);
 
   if (!newsItem) {
     return (
@@ -56,20 +148,36 @@ export default function NewsDetail() {
     );
   }
 
-  // Related news
-  const relatedNews = storage.getPublishedNews()
-    .filter(n => n.id !== newsItem.id && (n.category === newsItem.category || n.isPinned))
-    .slice(0, 3);
+  // Dynamic font class for comfortable reading
+  const fontClass = fontSize === 'large' 
+    ? 'text-lg leading-[2.2]' 
+    : fontSize === 'xlarge' 
+    ? 'text-xl leading-[2.4]' 
+    : 'text-base leading-relaxed';
 
   return (
     <motion.article 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: 'easeOut' }}
-      className="min-h-screen pb-24 bg-slate-50"
+      className="min-h-screen pb-24 bg-slate-50 relative"
     >
-      {/* Hero Image Section */}
-      <div className="w-full h-[45vh] md:h-[60vh] relative bg-slate-900 overflow-hidden">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-xl border border-white/10"
+          >
+            {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Hero Image Section (Original Cinematic Style) */}
+      <div className="w-full h-[45vh] md:h-[60vh] relative bg-slate-900 overflow-hidden print:hidden">
         <img 
           src={newsItem.image} 
           alt={newsItem.title} 
@@ -117,13 +225,13 @@ export default function NewsDetail() {
         </div>
       </div>
 
-      {/* Content Section */}
+      {/* Content Section (Original Center Overlapping Card) */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
         <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-12 -mt-10 relative z-10 space-y-8">
           
-          {/* Metadata bar */}
+          {/* Metadata Bar with Tools */}
           <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-100 text-xs md:text-sm text-slate-500 font-medium">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
                   <User className="w-4 h-4" />
@@ -136,13 +244,66 @@ export default function NewsDetail() {
               </div>
             </div>
 
-            <button
-              onClick={handleShare}
-              className="flex items-center gap-2 text-blue-600 font-bold text-xs bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition-colors"
-            >
-              {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
-              {copied ? 'لینک کپی شد' : 'اشتراک‌گذاری خبر'}
-            </button>
+            {/* Utility Actions */}
+            <div className="flex items-center gap-2">
+              {/* Font Size Adjuster */}
+              <div className="flex items-center bg-slate-100 p-0.5 rounded-xl text-xs font-bold text-slate-600">
+                <button
+                  type="button"
+                  onClick={() => setFontSize('normal')}
+                  title="اندازه متن عادی"
+                  className={`px-2 py-1 rounded-lg transition-colors ${fontSize === 'normal' ? 'bg-white text-blue-600 shadow-xs' : 'hover:text-slate-900'}`}
+                >
+                  A
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFontSize('large')}
+                  title="اندازه متن بزرگ"
+                  className={`px-2 py-1 rounded-lg transition-colors text-sm ${fontSize === 'large' ? 'bg-white text-blue-600 shadow-xs' : 'hover:text-slate-900'}`}
+                >
+                  A+
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFontSize('xlarge')}
+                  title="اندازه متن خیلی بزرگ"
+                  className={`px-2 py-1 rounded-lg transition-colors text-base ${fontSize === 'xlarge' ? 'bg-white text-blue-600 shadow-xs' : 'hover:text-slate-900'}`}
+                >
+                  A++
+                </button>
+              </div>
+
+              {/* Bookmark Button */}
+              <button
+                type="button"
+                onClick={toggleBookmark}
+                title={isBookmarked ? 'حذف از نشان‌شده‌ها' : 'نشان کردن خبر'}
+                className={`p-2 rounded-xl border transition-colors ${isBookmarked ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-blue-600'}`}
+              >
+                {isBookmarked ? <BookmarkCheck className="w-4 h-4 fill-amber-500 text-amber-500" /> : <Bookmark className="w-4 h-4" />}
+              </button>
+
+              {/* Print Button */}
+              <button
+                type="button"
+                onClick={handlePrint}
+                title="چاپ خبر"
+                className="p-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:text-blue-600 transition-colors hidden sm:block"
+              >
+                <Printer className="w-4 h-4" />
+              </button>
+
+              {/* Share Button */}
+              <button
+                type="button"
+                onClick={handleShare}
+                className="flex items-center gap-1.5 text-blue-600 font-bold text-xs bg-blue-50 px-3.5 py-2 rounded-xl hover:bg-blue-100 transition-colors"
+              >
+                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
+                <span>{copied ? 'لینک کپی شد' : 'اشتراک‌گذاری'}</span>
+              </button>
+            </div>
           </div>
 
           {/* Lead Summary */}
@@ -155,7 +316,7 @@ export default function NewsDetail() {
           {/* Main Body */}
           <div className="prose prose-lg prose-slate max-w-none prose-headings:font-black prose-p:leading-loose prose-p:text-slate-700 prose-p:font-light">
             <div 
-              className="ql-editor p-0 text-slate-700 leading-relaxed space-y-4"
+              className={`ql-editor p-0 text-slate-700 ${fontClass} space-y-4`}
               dangerouslySetInnerHTML={{ __html: newsItem.content }} 
             />
           </div>
@@ -188,12 +349,13 @@ export default function NewsDetail() {
                   {newsItem.gallery.map((img, idx) => (
                     <div 
                       key={idx} 
-                      onClick={() => setSelectedGalleryImg(img)}
+                      onClick={() => setLightboxIndex(idx + 1)}
                       className="relative aspect-video rounded-2xl overflow-hidden cursor-pointer group bg-slate-100 border border-slate-200"
                     >
                       <img src={img} alt={`تصویر ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
-                        بزرگنمایی
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1">
+                        <Maximize2 className="w-4 h-4" />
+                        <span>بزرگنمایی</span>
                       </div>
                     </div>
                   ))}
@@ -253,6 +415,78 @@ export default function NewsDetail() {
             </div>
           )}
 
+          {/* Social Share Quick Links */}
+          <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <span className="font-bold text-slate-500">ارسال به پیام‌رسان‌ها:</span>
+            <div className="flex items-center gap-2">
+              <a 
+                href={getSocialShare('eitaa')} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-xl bg-[#e06a1c]/10 text-[#e06a1c] font-bold hover:bg-[#e06a1c] hover:text-white transition-colors"
+              >
+                ایتا
+              </a>
+              <a 
+                href={getSocialShare('bale')} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-xl bg-[#2ea879]/10 text-[#2ea879] font-bold hover:bg-[#2ea879] hover:text-white transition-colors"
+              >
+                بله
+              </a>
+              <a 
+                href={getSocialShare('telegram')} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-xl bg-[#229ed9]/10 text-[#229ed9] font-bold hover:bg-[#229ed9] hover:text-white transition-colors"
+              >
+                تلگرام
+              </a>
+              <a 
+                href={getSocialShare('whatsapp')} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-xl bg-[#25d366]/10 text-[#25d366] font-bold hover:bg-[#25d366] hover:text-white transition-colors"
+              >
+                واتساپ
+              </a>
+            </div>
+          </div>
+
+          {/* Previous & Next Article Navigation */}
+          <div className="pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {prevNews ? (
+              <Link
+                to={`/news/${prevNews.id}`}
+                className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 transition-colors flex items-center gap-3 text-right group"
+              >
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 shrink-0">
+                  <img src={prevNews.image} alt={prevNews.title} className="w-full h-full object-cover" />
+                </div>
+                <div className="truncate">
+                  <span className="text-[10px] text-slate-400 block">خبر قبلی</span>
+                  <p className="text-xs font-bold text-slate-800 group-hover:text-blue-600 truncate">{prevNews.title}</p>
+                </div>
+              </Link>
+            ) : <div />}
+
+            {nextNews ? (
+              <Link
+                to={`/news/${nextNews.id}`}
+                className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 transition-colors flex items-center justify-between gap-3 text-right group"
+              >
+                <div className="truncate">
+                  <span className="text-[10px] text-slate-400 block">خبر بعدی</span>
+                  <p className="text-xs font-bold text-slate-800 group-hover:text-blue-600 truncate">{nextNews.title}</p>
+                </div>
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200 shrink-0">
+                  <img src={nextNews.image} alt={nextNews.title} className="w-full h-full object-cover" />
+                </div>
+              </Link>
+            ) : <div />}
+          </div>
+
         </div>
 
         {/* Related News Section */}
@@ -288,20 +522,61 @@ export default function NewsDetail() {
 
       </div>
 
-      {/* Gallery Modal */}
-      {selectedGalleryImg && (
+      {/* Lightbox Gallery Modal with Next/Previous */}
+      {lightboxIndex !== null && (
         <div 
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
-          onClick={() => setSelectedGalleryImg(null)}
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 select-none"
+          onClick={() => setLightboxIndex(null)}
         >
-          <div className="relative max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl">
-            <img src={selectedGalleryImg} alt="گالری" className="w-full h-auto max-h-[85vh] object-contain rounded-2xl" />
+          {/* Top Bar */}
+          <div className="absolute top-4 left-4 right-4 flex items-center justify-between text-white z-10">
+            <span className="text-xs font-bold bg-black/40 px-3 py-1 rounded-xl">
+              تصویر {lightboxIndex + 1} از {allImages.length}
+            </span>
             <button 
-              onClick={() => setSelectedGalleryImg(null)}
-              className="absolute top-4 right-4 bg-black/60 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-black/80"
+              onClick={() => setLightboxIndex(null)}
+              className="p-2 bg-black/40 hover:bg-black/70 rounded-xl text-white cursor-pointer"
             >
-              بستن
+              <X className="w-5 h-5" />
             </button>
+          </div>
+
+          {/* Navigation Arrows */}
+          {allImages.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxIndex(prev => (prev !== null && prev > 0 ? prev - 1 : allImages.length - 1));
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/80 rounded-2xl text-white cursor-pointer z-10"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxIndex(prev => (prev !== null && prev < allImages.length - 1 ? prev + 1 : 0));
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/50 hover:bg-black/80 rounded-2xl text-white cursor-pointer z-10"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            </>
+          )}
+
+          <div 
+            className="relative max-w-4xl max-h-[90vh] overflow-hidden rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img 
+              src={allImages[lightboxIndex]} 
+              alt="گالری" 
+              className="w-full h-auto max-h-[85vh] object-contain rounded-2xl shadow-2xl" 
+            />
           </div>
         </div>
       )}
