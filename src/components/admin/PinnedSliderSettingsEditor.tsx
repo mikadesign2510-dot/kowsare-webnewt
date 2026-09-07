@@ -154,19 +154,28 @@ export default function PinnedSliderSettingsEditor({
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={config.enabled}
-                onChange={(e) => handleUpdate('enabled', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-              <span className="mr-2 text-xs font-bold text-slate-300">
-                {config.enabled ? 'فعال در صفحه اخبار' : 'غیرفعال'}
-              </span>
-            </label>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => handleUpdate('enabled', !config.enabled)}
+              className={`inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer select-none ${
+                config.enabled
+                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-slate-300'
+              }`}
+            >
+              <div className={`w-2 h-2 rounded-full transition-all ${
+                config.enabled ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-slate-500'
+              }`} />
+              <span>{config.enabled ? 'فعال در صفحه اخبار' : 'غیرفعال (مخفی)'}</span>
+              <div className={`w-8 h-4.5 rounded-full relative transition-colors duration-200 ease-in-out p-0.5 ${
+                config.enabled ? 'bg-emerald-500' : 'bg-slate-700'
+              }`}>
+                <div className={`w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${
+                  config.enabled ? 'translate-x-0' : '-translate-x-3.5'
+                }`} />
+              </div>
+            </button>
           </div>
         </div>
 

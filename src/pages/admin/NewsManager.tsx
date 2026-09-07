@@ -1779,20 +1779,26 @@ export default function AdminNews() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-2">چکیده و خلاصه خبر (برای نمایش در کارت‌ها و پیش‌نمایش) *</label>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-xs font-bold text-slate-700">چکیده و خلاصه خبر (برای نمایش در کارت‌ها و پیش‌نمایش) *</label>
+                        <span className="text-[11px] text-slate-400 font-medium">{formData.summary?.length || 0} کاراکتر</span>
+                      </div>
                       <textarea
                         required
                         name="summary"
                         value={formData.summary}
                         onChange={handleInputChange}
                         rows={3}
-                        placeholder="متن جذاب و کوتاهی که در صفحه اصلی و شبکه‌های اجتماعی نمایش داده می‌شود..."
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="متن جذاب و خلاصه‌ای از خبر که در صفحه اصلی، کارت‌های اخبار و شبکه‌های اجتماعی نمایش داده می‌شود..."
+                        className="w-full bg-slate-50/70 hover:bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs sm:text-sm leading-relaxed text-slate-800 font-normal focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all font-['Vazirmatn'] resize-y min-h-[90px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-2">متن کامل و جامع خبر (ویرایشگر پیشرفته با تیتر، لیست و نقل‌قول)</label>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-xs font-bold text-slate-700">متن کامل و جامع خبر (نگارش با فونت وزیرمتن و امکانات غنی)</label>
+                        <span className="text-[11px] text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full font-bold">فونت رسمی سایت: Vazirmatn</span>
+                      </div>
                       <RichTextEditor
                         value={formData.content}
                         onChange={(val) => setFormData(prev => ({ ...prev, content: val }))}
