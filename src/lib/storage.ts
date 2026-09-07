@@ -1977,49 +1977,28 @@ export const storage = {
     const banners = storage.getBanners();
     const newBanner: BannerItem = {
       ...bannerData,
-      id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 5),
+      id: `banner-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
       createdAt: new Date().toLocaleDateString('fa-IR'),
-      order: bannerData.order !== undefined ? bannerData.order : banners.length + 1
+      order: bannerData.order !== undefined ? Number(bannerData.order) : banners.length + 1,
+      showButton: bannerData.showButton !== undefined ? bannerData.showButton : true,
+      buttonText: bannerData.buttonText || 'مشاهده جزئیات',
+      isActive: bannerData.isActive !== undefined ? bannerData.isActive : true,
+      duration: bannerData.duration || 5
     };
-    const updated = [...banners, newBanner].sort((a, b) => a.order - b.order);
+    const updated = [...banners, newBanner].sort((a, b) => (a.order || 0) - (b.order || 0));
     storage.saveBanners(updated);
-    
-    // Direct single API call + full sync
-    try {
-      const headers = getAdminAuthHeaders();
-      fetch('/api/banners', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(newBanner)
-      }).catch(e => console.warn('Single banner POST error:', e));
-    } catch {}
-
     storage.saveBannersToDB(updated).catch(e => console.warn('Banners DB sync error:', e));
     return newBanner;
   },
 
   updateBanner: (banner: BannerItem) => {
     const banners = storage.getBanners();
-    const updated = banners.map(b => String(b.id) === String(banner.id) ? { ...b, ...banner } : b).sort((a, b) => a.order - b.order);
+    const updated = banners.map(b => String(b.id) === String(banner.id) ? { ...b, ...banner } : b).sort((a, b) => (a.order || 0) - (b.order || 0));
     storage.saveBanners(updated);
-
-    try {
-      const headers = getAdminAuthHeaders();
-      fetch(`/api/banners/${banner.id}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify(banner)
-      }).catch(e => console.warn('Single banner PUT error:', e));
-    } catch {}
-
     storage.saveBannersToDB(updated).catch(e => console.warn('Banners DB sync error:', e));
   },
 
   deleteBanner: (id: string) => {
-    // API call injected by AI
-    const token = localStorage.getItem('kowsar_admin_token') || localStorage.getItem('kowsar_token');
-    const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
-    fetch(`/api/banners/${id}`, { method: 'DELETE', headers }).catch(e => console.error('Delete API error:', e));
     const banners = storage.getBanners();
     const updated = banners.filter(b => String(b.id) !== String(id));
     storage.saveBanners(updated);
@@ -2891,22 +2870,28 @@ export const storage = {
       const res = await fetch('/api/banners');
       if (res.ok) {
         const json = await res.json();
-        if (json.success && Array.isArray(json.data)) {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
           const dbBanners: BannerItem[] = json.data.map((item: any) => ({
-            id: item.id,
-            imageUrl: item.image_url,
-            title: item.title,
-            subtitle: item.subtitle,
-            link: item.link,
-            showButton: item.show_button !== false,
-            buttonText: item.button_text || 'مشاهده جزئیات',
-            order: item.order,
-            isActive: item.is_active,
-            duration: item.duration,
-            createdAt: item.created_at
+            id: String(item.id),
+            imageUrl: item.image_url || item.imageUrl || '',
+            title: item.title || '',
+            subtitle: item.subtitle || '',
+            link: item.link || '',
+            showButton: item.show_button !== false && item.showButton !== false,
+            buttonText: item.button_text || item.buttonText || 'مشاهده جزئیات',
+            order: Number(item.order) || 1,
+            isActive: item.is_active !== false && item.isActive !== false,
+            duration: Number(item.duration) || 5,
+            createdAt: item.created_at || item.createdAt || new Date().toLocaleDateString('fa-IR')
           }));
           localStorage.setItem(BANNERS_KEY, JSON.stringify(dbBanners));
           return dbBanners;
+        } else if (json.success && Array.isArray(json.data) && json.data.length === 0) {
+          const local = storage.getBanners();
+          if (local.length > 0) {
+            await storage.saveBannersToDB(local);
+            return local;
+          }
         }
       }
     } catch (e) {

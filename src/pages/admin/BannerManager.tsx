@@ -226,37 +226,46 @@ export default function BannerManager() {
   // Save Banner (Add or Update)
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.imageUrl.trim()) {
-      alert('لطفاً یک تصویر برای بنر انتخاب یا آپلود کنید.');
+    if (!formData.imageUrl || !formData.imageUrl.trim()) {
+      alert('لطفاً ابتدا یک تصویر برای اسلاید بنر انتخاب یا بارگذاری فرمایید.');
       return;
     }
 
-    let updatedBanners: BannerItem[] = [];
-    if (editingBanner) {
-      storage.updateBanner({
-        ...editingBanner,
-        ...formData
-      });
-      updatedBanners = storage.getBanners();
-      setSaveSuccessMessage('اسلاید بنر با موفقیت ویرایش و ذخیره شد.');
-    } else {
-      storage.addBanner(formData);
-      updatedBanners = storage.getBanners();
-      setSaveSuccessMessage(`اسلاید جدید (اسلاید شماره ${updatedBanners.length}) با موفقیت اضافه شد.`);
-    }
-
-    // Optimistic UI update
-    setBanners(updatedBanners);
-    setIsModalOpen(false);
-    setEditingBanner(null);
-
     try {
-      const res = await storage.saveBannersToDB(updatedBanners);
-      if (!res.success) {
-        alert('خطا در ذخیره اسلاید در پایگاه‌داده سرور: ' + (res.message || 'خطای ناشناخته'));
+      let updatedBanners: BannerItem[] = [];
+      if (editingBanner) {
+        storage.updateBanner({
+          ...editingBanner,
+          ...formData
+        });
+        updatedBanners = storage.getBanners();
+        setSaveSuccessMessage('اسلاید بنر با موفقیت ویرایش و ذخیره شد.');
+      } else {
+        storage.addBanner(formData);
+        updatedBanners = storage.getBanners();
+        setSaveSuccessMessage(`اسلاید جدید (اسلاید شماره ${updatedBanners.length}) با موفقیت اضافه شد.`);
       }
-    } catch (err) {
-      console.warn('DB sync banners error:', err);
+
+      // Optimistic & Immediate UI update
+      setBanners(updatedBanners);
+      setIsModalOpen(false);
+      setEditingBanner(null);
+
+      // Reset formData
+      setFormData({
+        imageUrl: '',
+        title: '',
+        subtitle: '',
+        link: '',
+        showButton: true,
+        buttonText: 'مشاهده جزئیات',
+        order: updatedBanners.length + 1,
+        isActive: true,
+        duration: 5
+      });
+    } catch (err: any) {
+      console.error('Error saving banner:', err);
+      alert('خطا در ذخیره اسلاید بنر: ' + (err?.message || 'خطای ناشناخته'));
     }
   };
 

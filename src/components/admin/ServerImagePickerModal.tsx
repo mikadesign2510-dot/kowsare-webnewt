@@ -145,7 +145,7 @@ export default function ServerImagePickerModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" dir="rtl">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" dir="rtl">
       <motion.div 
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -321,26 +321,45 @@ export default function ServerImagePickerModal({
                           />
                           
                           {/* Overlay on hover/select */}
-                          <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-2 flex flex-col justify-between transition-opacity ${
-                            isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                          <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-2.5 flex flex-col justify-between transition-all ${
+                            isSelected ? 'opacity-100 bg-black/60' : 'opacity-0 group-hover:opacity-100'
                           }`}>
-                            <div className="flex justify-end">
-                              {isSelected && (
-                                <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md">
+                            <div className="flex items-center justify-between">
+                              <span className="bg-blue-600/90 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">
+                                {img.folder}
+                              </span>
+                              {isSelected ? (
+                                <span className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md">
                                   <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-white/80 bg-black/40 px-1.5 py-0.5 rounded">
+                                  برای انتخاب کلیک کنید
                                 </span>
                               )}
                             </div>
                             <div>
-                              <p className="text-[11px] font-medium text-white truncate text-right">
+                              <p className="text-[11px] font-bold text-white truncate text-right">
                                 {img.originalName || img.name}
                               </p>
-                              <div className="flex items-center justify-between text-[10px] text-slate-300 mt-0.5">
+                              <div className="flex items-center justify-between text-[10px] text-slate-300 mt-0.5 mb-1.5">
                                 <span>{img.sizeFormatted}</span>
                                 <span className="bg-white/20 px-1.5 py-0.5 rounded text-[9px] uppercase font-mono">
                                   {img.ext.replace('.', '')}
                                 </span>
                               </div>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onSelect(img.url, img);
+                                  onClose();
+                                }}
+                                className="w-full py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-bold shadow-md flex items-center justify-center gap-1 transition-all cursor-pointer"
+                              >
+                                <Check className="w-3 h-3" />
+                                انتخاب مستقیم تصویر
+                              </button>
                             </div>
                           </div>
                         </div>

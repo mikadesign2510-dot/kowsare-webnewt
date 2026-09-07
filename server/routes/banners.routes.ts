@@ -16,23 +16,16 @@ router.get('/', async (req: Request, res: Response) => {
 
 // ایجاد یا به‌روزرسانی کلی لیست بنرها (UPSERT Safe Sync)
 router.post('/sync', async (req: Request, res: Response) => {
-  const client = await pool.connect();
+  const { banners } = req.body;
+  if (!Array.isArray(banners)) {
+    return res.status(400).json({ success: false, message: 'لیست بنرها نامعتبر است' });
+  }
+
+  let client;
   try {
-    const { banners } = req.body;
-    if (!Array.isArray(banners)) {
-      client.release();
-      return res.status(400).json({ success: false, message: 'لیست بنرها نامعتبر است' });
-    }
-
+    client = await pool.connect();
     await client.query('BEGIN');
-    await client.query('SELECT pg_advisory_xact_lock(74219)');
-
-    const incomingIds = banners.map((b: any) => String(b.id)).filter(Boolean);
-    if (incomingIds.length > 0) {
-      await client.query('DELETE FROM banners WHERE NOT (id = ANY($1))', [incomingIds]);
-    } else {
-      await client.query('DELETE FROM banners');
-    }
+    await client.query('DELETE FROM banners');
 
     for (let i = 0; i < banners.length; i++) {
       const b = banners[i];
@@ -44,17 +37,7 @@ router.post('/sync', async (req: Request, res: Response) => {
 
       await client.query(
         `INSERT INTO banners (id, image_url, title, subtitle, link, show_button, button_text, "order", is_active, duration, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-         ON CONFLICT (id) DO UPDATE SET
-           image_url = EXCLUDED.image_url,
-           title = EXCLUDED.title,
-           subtitle = EXCLUDED.subtitle,
-           link = EXCLUDED.link,
-           show_button = EXCLUDED.show_button,
-           button_text = EXCLUDED.button_text,
-           "order" = EXCLUDED."order",
-           is_active = EXCLUDED.is_active,
-           duration = EXCLUDED.duration`,
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
         [
           bannerId,
           b.imageUrl || b.image_url || '',
@@ -74,11 +57,15 @@ router.post('/sync', async (req: Request, res: Response) => {
     await client.query('COMMIT');
     res.json({ success: true, message: 'بنرها با موفقیت در دیتابیس ذخیره شدند' });
   } catch (error) {
-    await client.query('ROLLBACK');
+    if (client) {
+      try { await client.query('ROLLBACK'); } catch {}
+    }
     console.error('Error syncing banners:', error);
     res.status(500).json({ success: false, message: 'خطا در ذخیره بنرها' });
   } finally {
-    client.release();
+    if (client) {
+      try { client.release(); } catch {}
+    }
   }
 });
 
