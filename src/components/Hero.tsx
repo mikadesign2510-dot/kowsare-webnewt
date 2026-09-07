@@ -320,20 +320,25 @@ export default function Hero() {
                   </div>
                 )}
 
-                {/* Slider Dots */}
+                {/* Slider Indicators & Dots (Supports unlimited slides cleanly) */}
                 {banners.length > 1 && (
-                  <div className="absolute bottom-3 sm:bottom-4 left-0 right-0 z-20 flex justify-center gap-1.5 sm:gap-2 max-w-[90%] mx-auto flex-wrap px-4 opacity-90 group-hover:opacity-100 transition-opacity duration-300">
-                    {banners.map((banner, idx) => (
-                      <button
-                        key={banner.id || idx}
-                        onClick={() => {
-                          setDirection(idx > currentImageIndex ? 1 : -1);
-                          setCurrentImageIndex(idx);
-                        }}
-                        aria-label={`اسلاید ${idx + 1}`}
-                        className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 shadow-sm ${idx === currentImageIndex ? 'w-6 sm:w-7 bg-white' : 'w-1.5 sm:w-2 bg-white/50 hover:bg-white/80'}`}
-                      />
-                    ))}
+                  <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex items-center gap-2 bg-black/45 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15 text-white pointer-events-auto shadow-lg">
+                    <span className="text-[10px] sm:text-xs font-bold tracking-wider">
+                      {(safeIndex + 1).toLocaleString('fa-IR')} از {banners.length.toLocaleString('fa-IR')}
+                    </span>
+                    <div className="flex items-center gap-1 max-w-[140px] overflow-x-auto no-scrollbar py-0.5">
+                      {banners.map((banner, idx) => (
+                        <button
+                          key={banner.id || idx}
+                          onClick={() => {
+                            setDirection(idx > currentImageIndex ? 1 : -1);
+                            setCurrentImageIndex(idx);
+                          }}
+                          aria-label={`اسلاید ${idx + 1}`}
+                          className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 shrink-0 ${idx === safeIndex ? 'w-4 sm:w-5 bg-white' : 'w-1.5 sm:w-2 bg-white/40 hover:bg-white/80'}`}
+                        />
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

@@ -1948,9 +1948,9 @@ export const storage = {
   getBanners: (): BannerItem[] => {
     try {
       const data = localStorage.getItem(BANNERS_KEY);
-      if (data) {
+      if (data !== null) {
         const banners: BannerItem[] = JSON.parse(data);
-        if (Array.isArray(banners) && banners.length > 0) {
+        if (Array.isArray(banners)) {
           return banners.sort((a, b) => (a.order || 0) - (b.order || 0));
         }
       }
@@ -1963,8 +1963,7 @@ export const storage = {
 
   getActiveBanners: (): BannerItem[] => {
     const banners = storage.getBanners();
-    const active = banners.filter(b => b.isActive && b.imageUrl?.trim().length > 0);
-    return active.length > 0 ? active : defaultBanners;
+    return banners.filter(b => b.isActive && b.imageUrl?.trim().length > 0);
   },
 
   saveBanners: (banners: BannerItem[]) => {
@@ -2057,9 +2056,9 @@ export const storage = {
   getForms: (): FormItem[] => {
     try {
       const data = localStorage.getItem(FORMS_KEY);
-      if (data) {
+      if (data !== null) {
         const forms: FormItem[] = JSON.parse(data);
-        if (Array.isArray(forms) && forms.length > 0) return forms;
+        if (Array.isArray(forms)) return forms;
       }
       localStorage.setItem(FORMS_KEY, JSON.stringify(defaultForms));
       return defaultForms;
@@ -2892,7 +2891,7 @@ export const storage = {
       const res = await fetch('/api/banners');
       if (res.ok) {
         const json = await res.json();
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        if (json.success && Array.isArray(json.data)) {
           const dbBanners: BannerItem[] = json.data.map((item: any) => ({
             id: item.id,
             imageUrl: item.image_url,
@@ -2943,12 +2942,6 @@ export const storage = {
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
-          if (json.data.length === 0) {
-            // Seed DB if empty
-            await storage.saveFormsToDB(defaultForms);
-            return defaultForms;
-          }
-
           const dbForms: FormItem[] = json.data.map((item: any) => {
             const parseSafe = (val: any) => {
               if (Array.isArray(val)) return val;
@@ -2992,19 +2985,8 @@ export const storage = {
             };
           });
 
-          const localForms = storage.getForms();
-          const unsyncedLocals = localForms.filter(lf => !dbForms.some(df => df.id === lf.id || (df.title === lf.title && df.code === lf.code)));
-
-          // در صورتی که آیتم‌های محلی ایجاد شده هنوز در دیتابیس ثبت نشده‌اند، در پس‌زمینه ارسال شوند
-          if (unsyncedLocals.length > 0) {
-            for (const unsynced of unsyncedLocals) {
-              storage.createFormInDB(unsynced).catch(() => {});
-            }
-          }
-
-          const mergedForms = [...unsyncedLocals, ...dbForms];
-          storage.saveForms(mergedForms, false);
-          return mergedForms;
+          storage.saveForms(dbForms, false);
+          return dbForms;
         }
       }
     } catch (e) {

@@ -366,9 +366,20 @@ export async function initializeDatabase() {
       ALTER TABLE gallery_albums ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
     `);
 
-    // بررسی و ایجاد آلبوم نمونه اولیه در صورت خالی بودن جدول
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS system_metadata (
+        key VARCHAR(100) PRIMARY KEY,
+        value TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    const seedFlag = await client.query(`SELECT value FROM system_metadata WHERE key = 'initial_seed_completed'`);
+    const isFirstTimeBoot = seedFlag.rows.length === 0;
+
+    // بررسی و ایجاد آلبوم نمونه اولیه در صورت اولین راه‌اندازی
     const albumCheck = await client.query('SELECT COUNT(*) FROM gallery_albums');
-    if (parseInt(albumCheck.rows[0].count, 10) === 0) {
+    if (isFirstTimeBoot && parseInt(albumCheck.rows[0].count, 10) === 0) {
       const seedAlbums = [
         {
           id: 'sample-album-1',
@@ -483,9 +494,9 @@ export async function initializeDatabase() {
       console.log('👤 حساب مدیر ارشد اصلی در دیتابیس با موفقیت ایجاد شد (نام کاربری: elmi_admin)');
     }
 
-    // ایجاد اخبار پیش‌فرض در صورت خالی بودن
+    // ایجاد اخبار پیش‌فرض در صورت اولین راه‌اندازی
     const newsCheck = await client.query('SELECT COUNT(*) FROM news');
-    if (parseInt(newsCheck.rows[0].count, 10) === 0) {
+    if (isFirstTimeBoot && parseInt(newsCheck.rows[0].count, 10) === 0) {
       const seedNews = [
         {
           title: 'آغاز ثبت‌نام دوره‌های کاردانی و کارشناسی ترم جدید',
@@ -532,9 +543,9 @@ export async function initializeDatabase() {
       console.log('📰 اخبار اولیه با موفقیت در دیتابیس ثبت شدند.');
     }
 
-    // ایجاد بنرهای اسلایدر صفحه اصلی در صورت خالی بودن
+    // ایجاد بنرهای اسلایدر صفحه اصلی در صورت اولین راه‌اندازی
     const bannerCheck = await client.query('SELECT COUNT(*) FROM banners');
-    if (parseInt(bannerCheck.rows[0].count, 10) === 0) {
+    if (isFirstTimeBoot && parseInt(bannerCheck.rows[0].count, 10) === 0) {
       const seedBanners = [
         {
           id: '1',
@@ -581,9 +592,9 @@ export async function initializeDatabase() {
       console.log('🖼️ بنرهای اسلایدر صفحه اصلی در دیتابیس ثبت شدند.');
     }
 
-    // ایجاد فرم‌ها و آیین‌نامه‌ها در صورت خالی بودن
+    // ایجاد فرم‌ها و آیین‌نامه‌ها در صورت اولین راه‌اندازی
     const formCheck = await client.query('SELECT COUNT(*) FROM forms');
-    if (parseInt(formCheck.rows[0].count, 10) === 0) {
+    if (isFirstTimeBoot && parseInt(formCheck.rows[0].count, 10) === 0) {
       const seedForms = [
         {
           id: 'form-1',
@@ -636,6 +647,9 @@ export async function initializeDatabase() {
       }
       console.log('📋 فرم‌های اولیه در دیتابیس ثبت شدند.');
     }
+
+    // علامت‌گذاری اتمام راه‌اندازی اولیه جهت عدم بازگشت مجدد داده‌های پاک‌شده توسط کاربر
+    await client.query(`INSERT INTO system_metadata (key, value) VALUES ('initial_seed_completed', 'true') ON CONFLICT (key) DO NOTHING`);
 
     
     // جدول دانشجویان (پرتال)
