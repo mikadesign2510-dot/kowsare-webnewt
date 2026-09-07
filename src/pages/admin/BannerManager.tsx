@@ -203,6 +203,10 @@ export default function BannerManager() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 20 * 1024 * 1024) {
+        alert(`حجم تصویر انتخابی (${(file.size / (1024 * 1024)).toFixed(2)} مگابایت) بیشتر از سقف مجاز ۲۰ مگابایت است.`);
+        return;
+      }
       setIsUploading(true);
       try {
         const result = await uploadFileToServer(file, 'banners');
@@ -1150,7 +1154,7 @@ export default function BannerManager() {
                         <span>راهنمای آپلود تصویر بنر:</span>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-600">
-                        <div>• <strong>حجم مجاز:</strong> تا ۵ مگابایت با فشرده‌سازی خودکار در مرورگر</div>
+                        <div>• <strong>حجم مجاز:</strong> تا ۲۰ مگابایت با فشرده‌سازی خودکار در مرورگر</div>
                         <div>• <strong>فرمت‌های مجاز:</strong> JPG, PNG, WebP, GIF, SVG</div>
                         <div>• <strong>نسبت استاندارد بنر:</strong> ۱۶:۹ یا عریض (حداقل ۱۹۲۰×۱۰۸۰ پیکسل)</div>
                         <div>• <strong>سرعت بهینه:</strong> تصاویر به فرمت پرسرعت WebP تبدیل خواهند شد</div>

@@ -66,40 +66,50 @@ export default function ServerImagePickerModal({
   const [selectedImage, setSelectedImage] = useState<ServerImageItem | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploadFolder, setUploadFolder] = useState<string>(effectiveFolder === 'all' ? 'general' : effectiveFolder);
+  const [uploadFolder, setUploadFolder] = useState<string>(effectiveFolder === 'all' ? 'banners' : effectiveFolder);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load images from server
-  const loadImages = async () => {
+  const loadImages = async (folderToFetch: string = selectedFolder, query: string = searchQuery) => {
     setIsLoading(true);
     try {
-      const res = await fetchServerImages(selectedFolder, searchQuery);
-      if (res.success) {
+      const res = await fetchServerImages(folderToFetch, query);
+      if (res && res.success && Array.isArray(res.data)) {
         setImages(res.data);
       } else {
         setImages([]);
       }
     } catch (err) {
       console.error('Failed to fetch server images:', err);
+      setImages([]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // On open or when folder props change, initialize correctly
   useEffect(() => {
     if (isOpen) {
-      loadImages();
-      setSelectedFolder(defaultFolder);
-      if (defaultFolder !== 'all') {
-        setUploadFolder(defaultFolder);
-      }
+      const initFolder = initialFolder || defaultFolder || 'all';
+      setSelectedFolder(initFolder);
+      setUploadFolder(initFolder === 'all' ? 'banners' : initFolder);
+      setSelectedImage(null);
+      setUploadError(null);
+      setActiveTab('gallery');
+    }
+  }, [isOpen, initialFolder, defaultFolder]);
+
+  // Fetch images whenever modal is open and selectedFolder or searchQuery changes
+  useEffect(() => {
+    if (isOpen) {
+      loadImages(selectedFolder, searchQuery);
     }
   }, [isOpen, selectedFolder, searchQuery]);
 
   // Filtered images list
   const filteredImages = useMemo(() => {
     return images.filter(img => {
-      const matchesFolder = selectedFolder === 'all' || img.folder === selectedFolder;
+      const matchesFolder = !selectedFolder || selectedFolder === 'all' || img.folder === selectedFolder;
       const matchesSearch = !searchQuery || 
         img.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (img.originalName && img.originalName.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -258,16 +268,32 @@ export default function ServerImagePickerModal({
                     <span className="text-xs">در حال بارگذاری فایل‌های سرور...</span>
                   </div>
                 ) : filteredImages.length === 0 ? (
-                  <div className="h-64 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl">
+                  <div className="h-64 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center">
                     <ImageIcon className="w-10 h-10 text-slate-300 mb-2" />
-                    <span className="text-sm font-medium text-slate-600">تصویری در این پوشه یافت نشد</span>
-                    <span className="text-xs text-slate-400 mt-1">می‌توانید از تب «آپلود فایل جدید» تصویر دلخواه خود را بارگذاری کنید.</span>
-                    <button
-                      onClick={() => setActiveTab('upload')}
-                      className="mt-4 px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold transition-all"
-                    >
-                      بارگذاری تصویر جدید
-                    </button>
+                    <span className="text-sm font-bold text-slate-700">تصویری در این بخش یافت نشد</span>
+                    <span className="text-xs text-slate-400 mt-1 max-w-sm">
+                      می‌توانید تصویر جدیدی آپلود کنید یا تمامی تصاویر موجود در سرور را مشاهده نمایید.
+                    </span>
+                    <div className="flex items-center gap-2 mt-4">
+                      {selectedFolder !== 'all' && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedFolder('all')}
+                          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                        >
+                          <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
+                          مشاهده همه تصاویر سرور
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('upload')}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 flex items-center gap-1.5"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        بارگذاری تصویر جدید
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
