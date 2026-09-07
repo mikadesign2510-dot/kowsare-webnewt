@@ -6,7 +6,7 @@ import {
   Upload, UploadCloud, Crop, RefreshCw, Maximize2, Check,
   Camera, Sliders, ExternalLink, HelpCircle, Layers, Award,
   ShieldCheck, Bookmark, Compass, Box, Palette, Link2,
-  ArrowLeftRight, AlignRight, AlignCenter, AlignJustify, Columns2
+  ArrowLeftRight, AlignRight, AlignCenter, AlignJustify, Columns2, HardDrive
 } from 'lucide-react';
 import { 
   storage, 
@@ -18,6 +18,7 @@ import { toPersianDigits } from '../../lib/utils';
 import { uploadFileToServer, optimizeImageToWebP } from '../../lib/uploadHelper';
 import ImageCropperModal from '../../components/admin/ImageCropperModal';
 import DeleteConfirmModal from '../../components/admin/DeleteConfirmModal';
+import ServerImagePickerModal from '../../components/admin/ServerImagePickerModal';
 
 // Available Frame Designs for Presentation Section - 3 Simple Clean Styles
 const PRESENTATION_FRAME_STYLES: {
@@ -113,7 +114,8 @@ export default function PresentationManager() {
   const [saveStatusMessage, setSaveStatusMessage] = useState<string | null>(null);
 
   // Upload & Image selection state
-  const [imageInputMode, setImageInputMode] = useState<'upload' | 'presets' | 'url'>('upload');
+  const [imageInputMode, setImageInputMode] = useState<'upload' | 'server' | 'presets' | 'url'>('upload');
+  const [isServerPickerOpen, setIsServerPickerOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatusMsg, setUploadStatusMsg] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -875,6 +877,21 @@ export default function PresentationManager() {
                         </button>
                         <button
                           type="button"
+                          onClick={() => {
+                            setImageInputMode('server');
+                            setIsServerPickerOpen(true);
+                          }}
+                          className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            imageInputMode === 'server'
+                              ? 'bg-indigo-600 text-white shadow-xs'
+                              : 'text-slate-600 hover:text-indigo-600'
+                          }`}
+                        >
+                          <HardDrive className="w-3.5 h-3.5 text-blue-500" />
+                          <span>مخزن سرور (پارس‌پک)</span>
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => setImageInputMode('presets')}
                           className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                             imageInputMode === 'presets'
@@ -975,6 +992,31 @@ export default function PresentationManager() {
                     )}
 
                     {/* TAB CONTENT BASED ON SELECTED MODE */}
+                    {imageInputMode === 'server' && (
+                      <div className="p-4 bg-indigo-50/60 rounded-2xl border border-indigo-200/80 space-y-3">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
+                              <HardDrive className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-slate-800">مخزن و فضای ذخیره‌سازی سرور</h4>
+                              <p className="text-[11px] text-slate-500">انتخاب از میان تصاویر موجود روی سرور یا آپلود در پوشه معرفی مرکز</p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setIsServerPickerOpen(true)}
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-1.5"
+                          >
+                            <HardDrive className="w-3.5 h-3.5" />
+                            باز کردن مخزن تصاویر سرور
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     {imageInputMode === 'upload' && (
                       <div className="space-y-3">
                         <input
@@ -1706,6 +1748,19 @@ export default function PresentationManager() {
           confirmText="بله، حذف شود"
         />
       )}
+
+      {/* SERVER IMAGE PICKER MODAL */}
+      <ServerImagePickerModal
+        isOpen={isServerPickerOpen}
+        onClose={() => setIsServerPickerOpen(false)}
+        onSelect={(imgUrl) => {
+          setEditingSection(prev => prev ? ({ ...prev, image: imgUrl }) : null);
+          setUrlInput('');
+          setIsServerPickerOpen(false);
+        }}
+        initialFolder="presentation"
+        title="انتخاب تصویر معرفی مرکز از مخزن سرور"
+      />
     </div>
   );
 }

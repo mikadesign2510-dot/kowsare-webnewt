@@ -6,11 +6,12 @@ import {
   CheckCircle2, XCircle, Eye, EyeOff, Upload, Link as LinkIcon, 
   Sparkles, Clock, ExternalLink, RotateCcw, AlertTriangle, X,
   RefreshCw, Info, Crop, ChevronRight, ChevronLeft, ArrowLeft,
-  Monitor, LayoutTemplate, Play, Pause, GraduationCap
+  Monitor, LayoutTemplate, Play, Pause, GraduationCap, HardDrive
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ImageCropperModal from '../../components/admin/ImageCropperModal';
 import DeleteConfirmModal from '../../components/admin/DeleteConfirmModal';
+import ServerImagePickerModal from '../../components/admin/ServerImagePickerModal';
 
 // Curated academic presets for quick selection
 const PRESET_IMAGES = [
@@ -90,7 +91,8 @@ export default function BannerManager() {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [deleteConfirmBanner, setDeleteConfirmBanner] = useState<BannerItem | null>(null);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
-  const [imageInputMode, setImageInputMode] = useState<'upload' | 'url' | 'presets'>('upload');
+  const [imageInputMode, setImageInputMode] = useState<'upload' | 'server' | 'url' | 'presets'>('upload');
+  const [isServerPickerOpen, setIsServerPickerOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
   const [cropperModal, setCropperModal] = useState<{
@@ -972,7 +974,20 @@ export default function BannerManager() {
                     }`}
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    آپلود از کامپیوتر / موبایل
+                    آپلود از دستگاه
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageInputMode('server');
+                      setIsServerPickerOpen(true);
+                    }}
+                    className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                      imageInputMode === 'server' ? 'bg-white text-blue-600 shadow-sm' : 'hover:text-slate-900'
+                    }`}
+                  >
+                    <HardDrive className="w-3.5 h-3.5 text-blue-500" />
+                    مخزن سرور (پارس‌پک)
                   </button>
                   <button
                     type="button"
@@ -982,7 +997,7 @@ export default function BannerManager() {
                     }`}
                   >
                     <LinkIcon className="w-3.5 h-3.5" />
-                    لینک مستقیم تصویر (URL)
+                    لینک مستقیم (URL)
                   </button>
                   <button
                     type="button"
@@ -992,9 +1007,45 @@ export default function BannerManager() {
                     }`}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    گالری آماده دانشگاهی
+                    تصاویر آماده
                   </button>
                 </div>
+
+                {/* Server Storage Mode */}
+                {imageInputMode === 'server' && (
+                  <div className="p-4 bg-blue-50/60 rounded-2xl border border-blue-200/80 space-y-3">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
+                          <HardDrive className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-800">مخزن و فضای ذخیره‌سازی سرور</h4>
+                          <p className="text-[11px] text-slate-500">انتخاب از میان تصاویر موجود روی سرور یا آپلود مستقیم در پوشه بنرها</p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsServerPickerOpen(true)}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition-all flex items-center gap-1.5"
+                      >
+                        <HardDrive className="w-3.5 h-3.5" />
+                        باز کردن مخزن تصاویر سرور
+                      </button>
+                    </div>
+
+                    {formData.imageUrl && (
+                      <div className="mt-2 p-3 bg-white rounded-xl border border-blue-100 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 truncate">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span className="text-slate-700 truncate font-mono text-[11px]" dir="ltr">{formData.imageUrl}</span>
+                        </div>
+                        <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md shrink-0">تصویر انتخاب شده</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Upload Mode */}
                 {imageInputMode === 'upload' && (
@@ -1462,6 +1513,18 @@ export default function BannerManager() {
         title="برش و کادربندی استاندارد تصویر اسلایدر اصلی"
         targetFolder="banners"
         onCropComplete={handleBannerCropComplete}
+      />
+
+      {/* SERVER IMAGE PICKER MODAL */}
+      <ServerImagePickerModal
+        isOpen={isServerPickerOpen}
+        onClose={() => setIsServerPickerOpen(false)}
+        onSelect={(imgUrl) => {
+          setFormData(prev => ({ ...prev, imageUrl: imgUrl }));
+          setIsServerPickerOpen(false);
+        }}
+        initialFolder="banners"
+        title="انتخاب تصویر بنر اسلایدر از سرور"
       />
     </div>
   );

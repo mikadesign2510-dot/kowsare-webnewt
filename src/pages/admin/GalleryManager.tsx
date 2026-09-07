@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Camera, Plus, Trash2, Edit, Check, X, Image as ImageIcon, 
   Link as LinkIcon, UploadCloud, Loader2, Video, Sparkles, 
-  Info, CheckCircle2, AlertCircle, RefreshCw, Layers, Film, Play, ExternalLink, Clock, Crop, Eye, EyeOff, AlertTriangle
+  Info, CheckCircle2, AlertCircle, RefreshCw, Layers, Film, Play, ExternalLink, Clock, Crop, Eye, EyeOff, AlertTriangle, HardDrive
 } from 'lucide-react';
 import { storage, GalleryAlbum, NewsItem, GalleryImage } from '../../lib/storage';
 import { uploadFileToServer, uploadMultipleFilesToServer } from '../../lib/uploadHelper';
 import ImageCropperModal from '../../components/admin/ImageCropperModal';
 import DeleteConfirmModal from '../../components/admin/DeleteConfirmModal';
+import ServerImagePickerModal from '../../components/admin/ServerImagePickerModal';
 
 // Helper to convert any Aparat link, code or iframe into standard embed frame URL
 export function parseAparatEmbedUrl(input: string): string {
@@ -92,6 +93,15 @@ export default function GalleryManager() {
       updateImageField(cropperModal.targetIndex, 'url', finalUrl);
     }
   };
+
+  // Server Image Picker State
+  const [serverPickerState, setServerPickerState] = useState<{
+    isOpen: boolean;
+    target: 'cover' | 'images' | 'videoCover';
+  }>({
+    isOpen: false,
+    target: 'images'
+  });
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
@@ -691,7 +701,15 @@ export default function GalleryManager() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-slate-400 font-bold whitespace-nowrap">یا آدرس مستقیم (URL):</span>
+                          <button
+                            type="button"
+                            onClick={() => setServerPickerState({ isOpen: true, target: 'cover' })}
+                            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-sm cursor-pointer whitespace-nowrap"
+                          >
+                            <HardDrive className="w-3.5 h-3.5 text-blue-400" />
+                            <span>مخزن سرور</span>
+                          </button>
+                          <span className="text-xs text-slate-400 font-bold whitespace-nowrap">یا آدرس (URL):</span>
                           <input 
                             type="text" 
                             value={newCover}
@@ -814,6 +832,14 @@ export default function GalleryManager() {
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setServerPickerState({ isOpen: true, target: 'images' })}
+                        className="text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                      >
+                        <HardDrive className="w-4 h-4 text-blue-400" />
+                        <span>مخزن تصاویر سرور</span>
+                      </button>
                       <input 
                         type="file" 
                         accept="image/*" 
@@ -826,10 +852,10 @@ export default function GalleryManager() {
                         type="button"
                         onClick={() => imagesInputRef.current?.click()}
                         disabled={isUploading}
-                        className="text-xs font-bold text-white bg-blue-600 px-4 py-2.5 rounded-xl hover:bg-blue-700 flex items-center gap-1.5 transition-all shadow-sm shadow-blue-600/20 disabled:opacity-50"
+                        className="text-xs font-bold text-white bg-blue-600 px-4 py-2.5 rounded-xl hover:bg-blue-700 flex items-center gap-1.5 transition-all shadow-sm shadow-blue-600/20 disabled:opacity-50 cursor-pointer"
                       >
                         {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
-                        آپلود گروهی تصاویر
+                        آپلود فایل جدید
                       </button>
                       <button 
                         type="button"
@@ -1351,6 +1377,15 @@ export default function GalleryManager() {
                       onChange={handleUploadVideoCover}
                     />
                     <div className="flex gap-2 items-center">
+                      <button
+                        type="button"
+                        onClick={() => setServerPickerState({ isOpen: true, target: 'videoCover' })}
+                        className="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3 py-2.5 rounded-xl text-xs flex items-center gap-1 shrink-0 cursor-pointer"
+                        title="انتخاب از مخزن سرور"
+                      >
+                        <HardDrive className="w-4 h-4 text-blue-400" />
+                        <span>مخزن سرور</span>
+                      </button>
                       <input 
                         type="text" 
                         value={videoCover}
@@ -1666,6 +1701,30 @@ export default function GalleryManager() {
         onConfirm={executeDeleteVideo}
         title="تأیید حذف ویدیو"
         itemName={deleteConfirmVideo?.title}
+      />
+
+      {/* Server Storage Picker Modal */}
+      <ServerImagePickerModal
+        isOpen={serverPickerState.isOpen}
+        onClose={() => setServerPickerState(prev => ({ ...prev, isOpen: false }))}
+        onSelect={(imgUrl) => {
+          if (serverPickerState.target === 'cover') {
+            setNewCover(imgUrl);
+          } else if (serverPickerState.target === 'videoCover') {
+            setVideoCover(imgUrl);
+          } else if (serverPickerState.target === 'images') {
+            setNewImages(prev => [...prev, { url: imgUrl, type: 'image' }]);
+          }
+          setServerPickerState(prev => ({ ...prev, isOpen: false }));
+        }}
+        initialFolder="gallery"
+        title={
+          serverPickerState.target === 'cover' 
+            ? 'انتخاب تصویر کاور آلبوم از مخزن سرور' 
+            : serverPickerState.target === 'videoCover'
+            ? 'انتخاب پوستر ویدیو از مخزن سرور'
+            : 'انتخاب تصاویر نگارخانه از مخزن سرور'
+        }
       />
     </div>
   );

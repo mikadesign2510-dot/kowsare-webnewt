@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { storage, SiteSettings, StatItem } from '../../lib/storage';
 import { uploadFileToServer } from '../../lib/uploadHelper';
-import { Settings, Save, CheckCircle2, Plus, Trash2, Link as LinkIcon, List, BarChart3,  Upload, Image as ImageIcon, Type, Eye, Library,  Menu, Phone, LayoutTemplate, Star, ChevronUp, ChevronDown, ShieldCheck, Crop, GraduationCap } from 'lucide-react';
+import { Settings, Save, CheckCircle2, Plus, Trash2, Link as LinkIcon, List, BarChart3,  Upload, Image as ImageIcon, Type, Eye, Library,  Menu, Phone, LayoutTemplate, Star, ChevronUp, ChevronDown, ShieldCheck, Crop, GraduationCap, HardDrive } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ImageCropperModal from '../../components/admin/ImageCropperModal';
+import ServerImagePickerModal from '../../components/admin/ServerImagePickerModal';
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState<SiteSettings>(storage.getSettings());
@@ -26,6 +27,16 @@ export default function AdminSettings() {
     imageSrc: null,
     targetType: 'mainLogo',
     initialRatio: 1
+  });
+
+  // Server Image Picker State
+  const [serverPickerState, setServerPickerState] = useState<{
+    isOpen: boolean;
+    targetType: 'mainLogo' | 'higherEdLogo';
+    targetHigherEdId?: string;
+  }>({
+    isOpen: false,
+    targetType: 'mainLogo'
   });
 
   const handleSettingsCropComplete = (croppedFile: File, previewUrl: string, uploadResult?: any) => {
@@ -336,12 +347,20 @@ export default function AdminSettings() {
                 />
                 <button
                   type="button"
+                  onClick={() => setServerPickerState({ isOpen: true, targetType: 'mainLogo' })}
+                  className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center gap-1.5 text-sm cursor-pointer"
+                >
+                  <HardDrive className="w-4 h-4 text-blue-400" />
+                  <span>مخزن سرور</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 text-sm disabled:opacity-50"
                 >
                   <Upload className="w-4 h-4" />
-                  {isUploading ? 'در حال بارگذاری...' : 'انتخاب و آپلود تصویر'}
+                  {isUploading ? 'در حال بارگذاری...' : 'آپلود فایل جدید'}
                 </button>
                 {settings.logoUrl && (
                   <>
@@ -1063,6 +1082,19 @@ export default function AdminSettings() {
                       <span className="text-[10px] font-normal text-slate-400 mr-2">(سایز پیشنهادی: ۲۰۰x۲۰۰ پیکسل - مربع PNG یا WEBP)</span>
                     </label>
                     <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setServerPickerState({
+                          isOpen: true,
+                          targetType: 'higherEdLogo',
+                          targetHigherEdId: sys.id
+                        })}
+                        className="shrink-0 bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                        title="انتخاب از مخزن سرور"
+                      >
+                        <HardDrive className="w-3.5 h-3.5 text-blue-400" />
+                        <span>مخزن سرور</span>
+                      </button>
                       <input 
                         type="url" value={sys.logoUrl || ''} onChange={(e) => updateHigherEdSystem(sys.id, 'logoUrl', e.target.value)}
                         placeholder="آدرس تصویر (یا آپلود کنید)" dir="ltr"
@@ -1428,6 +1460,26 @@ export default function AdminSettings() {
         }
         targetFolder="settings"
         onCropComplete={handleSettingsCropComplete}
+      />
+
+      {/* SERVER IMAGE PICKER MODAL */}
+      <ServerImagePickerModal
+        isOpen={serverPickerState.isOpen}
+        onClose={() => setServerPickerState(prev => ({ ...prev, isOpen: false }))}
+        onSelect={(imgUrl) => {
+          if (serverPickerState.targetType === 'mainLogo') {
+            setSettings(prev => ({ ...prev, logoUrl: imgUrl }));
+          } else if (serverPickerState.targetType === 'higherEdLogo' && serverPickerState.targetHigherEdId) {
+            updateHigherEdSystem(serverPickerState.targetHigherEdId, 'logoUrl', imgUrl);
+          }
+          setServerPickerState(prev => ({ ...prev, isOpen: false }));
+        }}
+        initialFolder="settings"
+        title={
+          serverPickerState.targetType === 'mainLogo'
+            ? 'انتخاب لوگوی دانشگاه از مخزن سرور'
+            : 'انتخاب لوگوی سامانه آموزش عالی از مخزن سرور'
+        }
       />
     </div>
   );

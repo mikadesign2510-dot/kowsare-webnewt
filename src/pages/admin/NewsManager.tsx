@@ -13,11 +13,12 @@ import {
   Globe, Lock, ArrowUpDown, LayoutGrid, List, FileSpreadsheet, 
   Printer, CheckSquare, Square, Share2, Clock, User, LayoutTemplate,
   UploadCloud, CheckCircle2, Camera, Star, Maximize2, FolderPlus, Crop,
-  Copy, Pin, PinOff, AlertTriangle
+  Copy, Pin, PinOff, AlertTriangle, HardDrive
 } from 'lucide-react';
 import RichTextEditor from '../../components/RichTextEditor';
 import ImageCropperModal from '../../components/admin/ImageCropperModal';
 import DeleteConfirmModal from '../../components/admin/DeleteConfirmModal';
+import ServerImagePickerModal from '../../components/admin/ServerImagePickerModal';
 
 import DatePicker from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
@@ -94,6 +95,7 @@ export default function AdminNews() {
   const [previewImageModal, setPreviewImageModal] = useState<string | null>(null);
   const [deleteConfirmNews, setDeleteConfirmNews] = useState<NewsItem | null>(null);
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState<boolean>(false);
+  const [isServerPickerOpen, setIsServerPickerOpen] = useState<boolean>(false);
 
   // Universal Cropper Modal State
   const [cropperModal, setCropperModal] = useState<{
@@ -1824,8 +1826,17 @@ export default function AdminNews() {
                           </div>
                         </div>
 
-                        {/* Direct Batch Upload Button */}
+                        {/* Direct Batch Upload Button & Server Storage Picker */}
                         <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setIsServerPickerOpen(true)}
+                            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-sm cursor-pointer"
+                          >
+                            <HardDrive className="w-3.5 h-3.5 text-blue-400" />
+                            <span>مخزن تصاویر سرور</span>
+                          </button>
+
                           <input
                             type="file"
                             ref={batchFileInputRef}
@@ -1848,7 +1859,7 @@ export default function AdminNews() {
                             ) : (
                               <>
                                 <UploadCloud className="w-3.5 h-3.5" />
-                                <span>+ افزودن تصاویر (تکی یا گروهی)</span>
+                                <span>+ افزودن فایل جدید</span>
                               </>
                             )}
                           </button>
@@ -2412,6 +2423,25 @@ export default function AdminNews() {
         title="حذف دسته‌جمعی اخبار"
         itemCount={selectedIds.length}
         confirmText="بله، همه حذف شوند"
+      />
+
+      {/* SERVER IMAGE PICKER MODAL */}
+      <ServerImagePickerModal
+        isOpen={isServerPickerOpen}
+        onClose={() => setIsServerPickerOpen(false)}
+        onSelect={(imgUrl) => {
+          if (!formData.image) {
+            setFormData(prev => ({ ...prev, image: imgUrl }));
+          } else {
+            setFormData(prev => ({
+              ...prev,
+              gallery: [...(prev.gallery || []).filter(u => u !== imgUrl), imgUrl]
+            }));
+          }
+          setIsServerPickerOpen(false);
+        }}
+        initialFolder="news"
+        title="انتخاب تصویر خبر از مخزن سرور"
       />
       </>
       )}
