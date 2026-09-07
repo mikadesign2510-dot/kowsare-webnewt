@@ -4,9 +4,9 @@ import { uploadFileToServer } from '../../lib/uploadHelper';
 import { 
   Images, Plus, Trash2, Edit3, ArrowUp, ArrowDown, 
   CheckCircle2, XCircle, Eye, EyeOff, Upload, Link as LinkIcon, 
-  Sparkles, Clock, ExternalLink, RotateCcw, AlertTriangle, X,
+  Sparkles, Clock, ExternalLink, RotateCcw, AlertTriangle, AlertCircle, X,
   RefreshCw, Info, Crop, ChevronRight, ChevronLeft, ArrowLeft,
-  Monitor, LayoutTemplate, Play, Pause, GraduationCap, HardDrive
+  Monitor, LayoutTemplate, Play, Pause, GraduationCap, HardDrive, Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ImageCropperModal from '../../components/admin/ImageCropperModal';
@@ -94,6 +94,7 @@ export default function BannerManager() {
   const [imageInputMode, setImageInputMode] = useState<'upload' | 'server' | 'url' | 'presets'>('upload');
   const [isServerPickerOpen, setIsServerPickerOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
   const [cropperModal, setCropperModal] = useState<{
     isOpen: boolean;
@@ -231,6 +232,7 @@ export default function BannerManager() {
       return;
     }
 
+    setIsSaving(true);
     try {
       let updatedBanners: BannerItem[] = [];
       if (editingBanner) {
@@ -239,15 +241,21 @@ export default function BannerManager() {
           ...formData
         });
         updatedBanners = storage.getBanners();
-        setSaveSuccessMessage('اسلاید بنر با موفقیت ویرایش و ذخیره شد.');
+        setSaveSuccessMessage('اسلاید بنر با موفقیت ویرایش و در دیتابیس ذخیره شد.');
       } else {
         storage.addBanner(formData);
         updatedBanners = storage.getBanners();
-        setSaveSuccessMessage(`اسلاید جدید (اسلاید شماره ${updatedBanners.length}) با موفقیت اضافه شد.`);
+        setSaveSuccessMessage(`اسلاید جدید (اسلاید شماره ${updatedBanners.length}) با موفقیت اضافه و ذخیره شد.`);
       }
 
       // Optimistic & Immediate UI update
       setBanners(updatedBanners);
+      try {
+        await storage.saveBannersToDB(updatedBanners);
+      } catch (syncErr) {
+        console.warn('DB sync banners error:', syncErr);
+      }
+
       setIsModalOpen(false);
       setEditingBanner(null);
 
@@ -266,6 +274,8 @@ export default function BannerManager() {
     } catch (err: any) {
       console.error('Error saving banner:', err);
       alert('خطا در ذخیره اسلاید بنر: ' + (err?.message || 'خطای ناشناخته'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1472,20 +1482,52 @@ export default function BannerManager() {
               </div>
 
               {/* Form Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-sm transition-all"
-                >
-                  انصراف
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all"
-                >
-                  {editingBanner ? 'ذخیره تغییرات' : 'افزودن اسلاید'}
-                </button>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100">
+                <div className="w-full sm:w-auto">
+                  {!formData.imageUrl ? (
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
+                      <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span>لطفاً ابتدا از بخش بالا یک تصویر انتخاب یا بارگذاری نمایید</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>تصویر آماده ذخیره است</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-end gap-3 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-sm transition-all"
+                  >
+                    انصراف
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isUploading || isSaving}
+                    className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all flex items-center gap-2"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        در حال بارگذاری تصویر...
+                      </>
+                    ) : isSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        در حال ذخیره‌سازی اسلاید...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4" />
+                        {editingBanner ? 'ذخیره تغییرات اسلاید' : 'ثبت و افزودن اسلاید به اسلایدر'}
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

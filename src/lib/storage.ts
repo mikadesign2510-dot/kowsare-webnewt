@@ -1902,10 +1902,13 @@ export const storage = {
 
   updateNews: (news: NewsItem) => {
     const allNews = storage.getNews();
-    const index = allNews.findIndex(n => n.id === news.id);
+    const index = allNews.findIndex(n => String(n.id) === String(news.id));
     if (index !== -1) {
       allNews[index] = { ...allNews[index], ...news };
       localStorage.setItem(NEWS_KEY, JSON.stringify(allNews));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('kowsar_news_changed', { detail: allNews }));
+      }
     }
   },
   
@@ -1915,30 +1918,40 @@ export const storage = {
     const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
     fetch(`/api/news/${id}`, { method: 'DELETE', headers }).catch(e => console.error('Delete API error:', e));
     const allNews = storage.getNews();
-    localStorage.setItem(NEWS_KEY, JSON.stringify(allNews.filter((n) => n.id !== id)));
+    const updated = allNews.filter((n) => String(n.id) !== String(id));
+    localStorage.setItem(NEWS_KEY, JSON.stringify(updated));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('kowsar_news_changed', { detail: updated }));
+    }
   },
 
   toggleNewsPublish: (id: number) => {
     const allNews = storage.getNews();
-    const index = allNews.findIndex(n => n.id === id);
+    const index = allNews.findIndex(n => String(n.id) === String(id));
     if (index !== -1) {
       allNews[index].isPublished = !allNews[index].isPublished;
       localStorage.setItem(NEWS_KEY, JSON.stringify(allNews));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('kowsar_news_changed', { detail: allNews }));
+      }
     }
   },
 
-  toggleNewsPin: (id: number) => {
+  toggleNewsPin: (id: number, explicitStatus?: boolean) => {
     const allNews = storage.getNews();
-    const index = allNews.findIndex(n => n.id === id);
+    const index = allNews.findIndex(n => String(n.id) === String(id));
     if (index !== -1) {
-      allNews[index].isPinned = !allNews[index].isPinned;
+      allNews[index].isPinned = explicitStatus !== undefined ? explicitStatus : !allNews[index].isPinned;
       localStorage.setItem(NEWS_KEY, JSON.stringify(allNews));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('kowsar_news_changed', { detail: allNews }));
+      }
     }
   },
 
   incrementNewsViews: (id: number) => {
     const allNews = storage.getNews();
-    const index = allNews.findIndex(n => n.id === id);
+    const index = allNews.findIndex(n => String(n.id) === String(id));
     if (index !== -1) {
       allNews[index].views = (allNews[index].views || 0) + 1;
       localStorage.setItem(NEWS_KEY, JSON.stringify(allNews));
@@ -2826,10 +2839,13 @@ export const storage = {
         if (json.data) {
           // Update in local cache directly
           const all = storage.getNews();
-          const idx = all.findIndex(n => n.id === id);
+          const idx = all.findIndex(n => String(n.id) === String(id));
           if (idx !== -1) {
             all[idx].isPublished = nextStatus;
             localStorage.setItem(NEWS_KEY, JSON.stringify(all));
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('kowsar_news_changed', { detail: all }));
+            }
           }
         }
       }
@@ -2838,9 +2854,11 @@ export const storage = {
     }
   },
 
-  toggleNewsPinInDB: async (id: number, currentPin: boolean) => {
-    const nextPin = !currentPin;
-    storage.toggleNewsPin(id);
+  toggleNewsPinInDB: async (id: number, currentPin?: boolean) => {
+    const all = storage.getNews();
+    const target = all.find(n => String(n.id) === String(id));
+    const nextPin = currentPin !== undefined ? !currentPin : (target ? !target.isPinned : true);
+    storage.toggleNewsPin(id, nextPin);
     try {
       const headers = getAdminAuthHeaders();
       const res = await fetch(`/api/news/${id}`, {
@@ -2852,11 +2870,14 @@ export const storage = {
         const json = await res.json();
         if (json.data) {
           // Update in local cache directly
-          const all = storage.getNews();
-          const idx = all.findIndex(n => n.id === id);
+          const fresh = storage.getNews();
+          const idx = fresh.findIndex(n => String(n.id) === String(id));
           if (idx !== -1) {
-            all[idx].isPinned = nextPin;
-            localStorage.setItem(NEWS_KEY, JSON.stringify(all));
+            fresh[idx].isPinned = nextPin;
+            localStorage.setItem(NEWS_KEY, JSON.stringify(fresh));
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('kowsar_news_changed', { detail: fresh }));
+            }
           }
         }
       }

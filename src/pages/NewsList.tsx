@@ -34,9 +34,16 @@ export default function NewsList() {
     const handleSettingsUpdate = () => {
       setSettings(storage.getSettings());
     };
+    const handleNewsUpdate = (e: any) => {
+      const items = (e?.detail && Array.isArray(e.detail)) ? e.detail : storage.getNews();
+      const published = items.filter((n: any) => n.isPublished !== false);
+      setAllNews(published);
+    };
     window.addEventListener('kowsar_site_settings_changed', handleSettingsUpdate);
+    window.addEventListener('kowsar_news_changed', handleNewsUpdate);
     return () => {
       window.removeEventListener('kowsar_site_settings_changed', handleSettingsUpdate);
+      window.removeEventListener('kowsar_news_changed', handleNewsUpdate);
     };
   }, []);
 

@@ -880,6 +880,7 @@ export default function AdminNews() {
         <PinnedSliderSettingsEditor
           currentConfig={siteSettings.pinnedNewsSliderConfig}
           newsItems={news}
+          onTogglePin={handleTogglePin}
           onSave={(newConfig) => {
             const updated = { ...siteSettings, pinnedNewsSliderConfig: newConfig };
             setSiteSettings(updated);

@@ -8,19 +8,21 @@ import PinnedNewsSlider from '../PinnedNewsSlider';
 import { 
   Pin, Sparkles, Check, RefreshCw, Layout, Sliders, 
   Palette, Eye, Clock, Image as ImageIcon, Save, AlertCircle,
-  Maximize2, Play, ToggleLeft, ToggleRight
+  Maximize2, Play, ToggleLeft, ToggleRight, Search, Plus, X, Layers
 } from 'lucide-react';
 
 interface PinnedSliderSettingsEditorProps {
   currentConfig?: PinnedNewsSliderConfig;
   newsItems: NewsItem[];
   onSave: (newConfig: PinnedNewsSliderConfig) => void;
+  onTogglePin?: (id: number) => void;
 }
 
 export default function PinnedSliderSettingsEditor({
   currentConfig,
   newsItems,
-  onSave
+  onSave,
+  onTogglePin
 }: PinnedSliderSettingsEditorProps) {
   const [config, setConfig] = useState<PinnedNewsSliderConfig>({
     ...defaultPinnedSliderConfig,
@@ -28,9 +30,11 @@ export default function PinnedSliderSettingsEditor({
   });
 
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [newsSearch, setNewsSearch] = useState('');
 
-  const sampleItems = newsItems.filter(n => n.isPinned).length > 0 
-    ? newsItems.filter(n => n.isPinned)
+  const pinnedItems = newsItems.filter(n => n.isPinned);
+  const sampleItems = pinnedItems.length > 0 
+    ? pinnedItems
     : newsItems.slice(0, 3);
 
   const handleUpdate = <K extends keyof PinnedNewsSliderConfig>(key: K, value: PinnedNewsSliderConfig[K]) => {
@@ -187,6 +191,141 @@ export default function PinnedSliderSettingsEditor({
               هنوز خبری سنجاق نشده است. برای نمایش محتوای واقعی، در تب مدیریت اخبار گزینه «سنجاق به بالای صفحه» را برای اخبار مهم فعال کنید.
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Interactive News Slides Manager Section */}
+      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+              <Layers className="w-5 h-5 text-amber-500" />
+              <span>مدیریت و انتخاب اسلایدهای خبر ویژه (سنجاق اخبار)</span>
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500 font-light mt-1">
+              اخبار دارای نشان سنجاق طلایی، به عنوان اسلایدهای این باکس ویژه نمایش داده می‌شوند. برای افزودن اسلاید دوم، سوم و بیشتر، روی دکمه افزودن کلیک کنید.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-800 font-black text-xs border border-amber-200/80 flex items-center gap-1.5 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>{pinnedItems.length} اسلاید فعال در باکس ویژه</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Currently Pinned Slides */}
+        {pinnedItems.length > 0 ? (
+          <div className="space-y-3">
+            <div className="text-xs font-bold text-slate-600 flex items-center gap-2">
+              <Pin className="w-3.5 h-3.5 text-amber-600" />
+              <span>اسلایدهای در حال نمایش در اسلایدر ({pinnedItems.length} خبر):</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {pinnedItems.map((item, idx) => (
+                <div 
+                  key={item.id}
+                  className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-50/60 border border-amber-200/80 hover:bg-amber-50 transition-all gap-3"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-6 h-6 rounded-lg bg-amber-500 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-sm">
+                      {idx + 1}
+                    </span>
+                    {item.image && (
+                      <img 
+                        src={item.image} 
+                        alt={item.title} 
+                        className="w-12 h-12 rounded-xl object-cover border border-amber-200 shrink-0" 
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-xs text-slate-800 truncate" title={item.title}>
+                        {item.title}
+                      </h4>
+                      <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-1">
+                        <span className="text-amber-700 font-semibold">{item.category}</span>
+                        <span>•</span>
+                        <span>{item.date}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onTogglePin?.(item.id)}
+                    title="حذف از اسلایدر ویژه"
+                    className="shrink-0 p-2 rounded-xl bg-white text-rose-600 hover:bg-rose-50 border border-rose-200 hover:border-rose-300 text-xs font-bold transition-colors flex items-center gap-1 shadow-2xs"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">حذف اسلاید</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="p-5 rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-center text-xs text-slate-500">
+            در حال حاضر هیچ خبری در این باکس سنجاق نشده است. از لیست زیر خبری را به عنوان اسلاید اول یا دوم انتخاب نمایید.
+          </div>
+        )}
+
+        {/* Add More News as Slides */}
+        <div className="pt-2 border-t border-slate-100 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <Plus className="w-4 h-4 text-blue-600" />
+              <span>افزودن اخبار به عنوان اسلاید جدید در باکس ویژه:</span>
+            </div>
+            <div className="relative w-full sm:w-64">
+              <Search className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={newsSearch}
+                onChange={(e) => setNewsSearch(e.target.value)}
+                placeholder="جستجو در سایر اخبار..."
+                className="w-full pr-8 pl-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-72 overflow-y-auto p-1">
+            {newsItems
+              .filter(n => !n.isPinned)
+              .filter(n => !newsSearch.trim() || n.title.includes(newsSearch) || n.summary?.includes(newsSearch))
+              .slice(0, 12)
+              .map(n => (
+                <div 
+                  key={n.id} 
+                  className="p-2.5 rounded-xl border border-slate-100 hover:border-slate-200 bg-slate-50/50 hover:bg-white flex items-center justify-between gap-2 transition-all"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    {n.image && (
+                      <img 
+                        src={n.image} 
+                        alt={n.title} 
+                        className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0" 
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-slate-700 truncate" title={n.title}>
+                        {n.title}
+                      </p>
+                      <span className="text-[10px] text-slate-400">{n.category}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onTogglePin?.(n.id)}
+                    className="shrink-0 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>افزودن اسلاید</span>
+                  </button>
+                </div>
+              ))}
+          </div>
         </div>
       </div>
 

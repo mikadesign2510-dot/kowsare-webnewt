@@ -302,15 +302,15 @@ export default function ServerImagePickerModal({
                       return (
                         <div
                           key={img.id}
-                          onClick={() => setSelectedImage(img)}
-                          onDoubleClick={() => {
+                          onClick={() => {
+                            setSelectedImage(img);
                             onSelect(img.url, img);
                             onClose();
                           }}
                           className={`group relative aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${
                             isSelected
                               ? 'border-blue-600 ring-4 ring-blue-500/20 shadow-lg'
-                              : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
+                              : 'border-slate-200 hover:border-blue-500 hover:shadow-lg'
                           }`}
                         >
                           <img
@@ -321,22 +321,14 @@ export default function ServerImagePickerModal({
                           />
                           
                           {/* Overlay on hover/select */}
-                          <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-2.5 flex flex-col justify-between transition-all ${
-                            isSelected ? 'opacity-100 bg-black/60' : 'opacity-0 group-hover:opacity-100'
-                          }`}>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent p-2.5 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition-all">
                             <div className="flex items-center justify-between">
                               <span className="bg-blue-600/90 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">
                                 {img.folder}
                               </span>
-                              {isSelected ? (
-                                <span className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md">
-                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
-                                </span>
-                              ) : (
-                                <span className="text-[10px] text-white/80 bg-black/40 px-1.5 py-0.5 rounded">
-                                  برای انتخاب کلیک کنید
-                                </span>
-                              )}
+                              <span className="text-[10px] text-white/90 bg-emerald-600/90 px-2 py-0.5 rounded-full font-bold">
+                                کلیک جهت انتخاب
+                              </span>
                             </div>
                             <div>
                               <p className="text-[11px] font-bold text-white truncate text-right">
@@ -350,15 +342,10 @@ export default function ServerImagePickerModal({
                               </div>
                               <button
                                 type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onSelect(img.url, img);
-                                  onClose();
-                                }}
-                                className="w-full py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-bold shadow-md flex items-center justify-center gap-1 transition-all cursor-pointer"
+                                className="w-full py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[11px] font-bold shadow-md flex items-center justify-center gap-1 transition-all cursor-pointer"
                               >
-                                <Check className="w-3 h-3" />
-                                انتخاب مستقیم تصویر
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                انتخاب و درج این تصویر
                               </button>
                             </div>
                           </div>

@@ -203,18 +203,21 @@ export async function initializeDatabase() {
       CREATE TABLE IF NOT EXISTS banners (
         id VARCHAR(64) PRIMARY KEY,
         image_url TEXT NOT NULL,
-        title VARCHAR(255),
-        subtitle VARCHAR(255),
+        title TEXT,
+        subtitle TEXT,
         link TEXT,
         show_button BOOLEAN DEFAULT TRUE,
-        button_text VARCHAR(100) DEFAULT 'مشاهده جزئیات',
+        button_text TEXT DEFAULT 'مشاهده جزئیات',
         "order" INT DEFAULT 1,
         is_active BOOLEAN DEFAULT TRUE,
         duration INT DEFAULT 5,
         created_at VARCHAR(50) NOT NULL
       );
       ALTER TABLE banners ADD COLUMN IF NOT EXISTS show_button BOOLEAN DEFAULT TRUE;
-      ALTER TABLE banners ADD COLUMN IF NOT EXISTS button_text VARCHAR(100) DEFAULT 'مشاهده جزئیات';
+      ALTER TABLE banners ADD COLUMN IF NOT EXISTS button_text TEXT DEFAULT 'مشاهده جزئیات';
+      ALTER TABLE banners ALTER COLUMN title TYPE TEXT;
+      ALTER TABLE banners ALTER COLUMN subtitle TYPE TEXT;
+      ALTER TABLE banners ALTER COLUMN button_text TYPE TEXT;
     `);
 
     // ۵. جدول فرم‌ها و بخشنامه‌های دانلودی
