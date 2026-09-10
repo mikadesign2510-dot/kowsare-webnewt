@@ -524,6 +524,15 @@ class LocalDatabaseManager {
         const uidVal = String(params[0]).trim();
         rows = rows.filter(r => String(r.user_id).trim() === uidVal);
       }
+      // tracking_code / user_national_id / student_mobile for quick track
+      else if (/tracking_code\s*=\s*\$1/i.test(wherePart) && params.length > 0) {
+        const qVal = String(params[0]).trim();
+        rows = rows.filter(r => 
+          String(r.tracking_code || '').trim() === qVal || 
+          String(r.user_national_id || '').trim() === qVal || 
+          String(r.student_mobile || '').trim() === qVal
+        );
+      }
       // album_id = $1
       else if (/album_id\s*=\s*\$1/i.test(wherePart) && params.length > 0) {
         const aidVal = String(params[0]).trim();

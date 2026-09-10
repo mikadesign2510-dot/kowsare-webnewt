@@ -702,6 +702,16 @@ export async function initializeDatabase() {
       );
     `);
 
+    try {
+      await client.query(`
+        ALTER TABLE financial_receipts 
+        ADD COLUMN IF NOT EXISTS student_mobile VARCHAR(50),
+        ADD COLUMN IF NOT EXISTS submission_type VARCHAR(50) DEFAULT 'portal',
+        ADD COLUMN IF NOT EXISTS category VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS bank_ref_number VARCHAR(100);
+      `);
+    } catch {}
+
     // جدول پیام‌های تماس با ما
     await client.query(`
       CREATE TABLE IF NOT EXISTS contact_messages (

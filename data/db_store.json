@@ -3,6 +3,439 @@
     {
       "id": 1,
       "settings": {
+        "logoTitle": "علمی کاربردی",
+        "logoSubtitle": "کوثر کاکی",
+        "showLogoText": true,
+        "heroBadge": "دانشگاه جامع علمی کاربردی",
+        "heroTitleLine1": "طراحی آینده با",
+        "heroTitleLine2": "دانش و مهارت",
+        "heroSubtitle": "مرکز آموزش علمی کاربردی کوثر کاکی، پیشگام در ارائه آموزش‌های نوین و مهارت‌محور. با ما مسیر شغلی خود را متفاوت آغاز کنید.",
+        "statsBadge": "آمار و دستاوردها",
+        "statsTitle": "روایتی از پویایی، تجربه و مهارت‌آموزی",
+        "statsSubtitle": "مرکز آموزش علمی کاربردی کوثر کاکی با تکیه بر استانداردهای مهارت‌محور، مسیری مطمئن برای اشتغال و تعالی فراهم ساخته است.",
+        "statsItems": [
+          {
+            "id": "stat-1",
+            "value": 1250,
+            "prefix": "+",
+            "title": "دانشجویان در حال تحصیل",
+            "description": "در دوره‌های مهارتی و اشتغال‌محور کاردانی و کارشناسی",
+            "iconName": "Users",
+            "colorScheme": "blue"
+          },
+          {
+            "id": "stat-2",
+            "value": 3400,
+            "prefix": "+",
+            "title": "فارغ‌التحصیلان متخصص",
+            "description": "ورود موفق به بازار کار و صنایع تولیدی و خدماتی",
+            "iconName": "GraduationCap",
+            "colorScheme": "emerald"
+          },
+          {
+            "id": "stat-3",
+            "value": 18,
+            "prefix": "+",
+            "title": "رشته‌های کاردانی و کارشناسی",
+            "description": "کدرشته‌های مصوب متناسب با پتانسیل‌های منطقه",
+            "iconName": "BookOpenCheck",
+            "colorScheme": "indigo"
+          },
+          {
+            "id": "stat-4",
+            "value": 92,
+            "suffix": "٪",
+            "title": "شاخص اشتغال فارغ‌التحصیلان",
+            "description": "نرخ بالای جذب و کارآفرینی در بخش‌های مختلف",
+            "iconName": "TrendingUp",
+            "colorScheme": "amber"
+          }
+        ],
+        "featuresBadge": "مزیت‌های رقابتی",
+        "featuresTitle": "چرا کوثر کاکی؟",
+        "featuresSubtitle": "آموزش‌های کاربردی، امکانات نوین و ارتباط مستقیم با بازار کار، ما را به انتخابی مطمئن تبدیل کرده است.",
+        "featuresItems": [
+          {
+            "id": "f1",
+            "title": "اساتید مجرب",
+            "description": "بهره‌گیری از اساتید برجسته و متخصص در حوزه‌های مهارتی",
+            "iconName": "GraduationCap"
+          },
+          {
+            "id": "f2",
+            "title": "تجهیزات مدرن",
+            "description": "کارگاه‌ها و آزمایشگاه‌های مجهز برای یادگیری عملی دانشجویان",
+            "iconName": "MonitorPlay"
+          },
+          {
+            "id": "f3",
+            "title": "ارتباط با صنعت",
+            "description": "تسهیل ورود فارغ‌التحصیلان به بازار کار از طریق تفاهم‌نامه‌ها",
+            "iconName": "Briefcase"
+          },
+          {
+            "id": "f4",
+            "title": "محیط پویا",
+            "description": "فضای آموزشی پرنشاط همراه با فعالیت‌های فرهنگی و دانشجویی",
+            "iconName": "Users"
+          }
+        ],
+        "contactPageTitle": "ارتباط با ما",
+        "contactPageSubtitle": "راه‌های ارتباطی با مرکز آموزش علمی کاربردی کوثر کاکی",
+        "contactMapIframe": "<iframe src=\"https://www.openstreetmap.org/export/embed.html?bbox=51.519707%2C28.337913%2C51.533707%2C28.347913&amp;layer=mapnik&amp;marker=28.342913%2C51.526707\" width=\"100%\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\"></iframe>",
+        "newsBadge": "اطلاع‌رسانی مرکز",
+        "newsTitle": "اخبار و رویدادها",
+        "pinnedNewsSliderConfig": {
+          "enabled": true,
+          "template": "split",
+          "badgeTitle": "اخبار ویژه",
+          "height": "compact",
+          "autoPlayInterval": 6000,
+          "showBadges": true,
+          "showCategory": true,
+          "showMeta": true,
+          "showReadTime": true,
+          "showSummary": true,
+          "showControls": true,
+          "showBottomTabs": true,
+          "accentColor": "amber",
+          "imagePosition": "center",
+          "roundedCorners": "large"
+        },
+        "formsBadge": "میز خدمت الکترونیک، جزوات درسی و دبیرخانه آموزشی مرکز آموزش علمی کاربردی کوثر کاکی",
+        "formsTitle": "جزوه و فرم‌ها",
+        "formsSubtitle": "در این بخش می‌توانید تمامی جزوات و منابع درسی، کاربرگ‌های آموزشی، درخواست‌های وام، تسویه حساب و آیین‌نامه‌ها را دریافت فرمایید.",
+        "newsNoticeTitle": "اطلاعیه مهم تقویم آموزشی",
+        "newsNoticeText": "دانشجویان گرامی لطفاً جهت اطلاع از آخرین مهلت‌های حذف و اضافه، بخش اخبار آموزشی را مرتباً بررسی فرمایند.",
+        "formsNoticeTitle": "سامانه سخا (معافیت تحصیلی نظام وظیفه)",
+        "formsNoticeText": "",
+        "formsSupportHours": "شنبه تا چهارشنبه: ساعت ۰۸:۰۰ الی ۱۴:۰۰\nپنج‌شنبه‌ها: ساعت ۰۸:۰۰ الی ۱۲:۰۰",
+        "formsSupportPhone": "۰۷۷-۳۵۳۲۲۴۴۱",
+        "footerAbout": "مرکز آموزش علمی کاربردی کوثر کاکی، نوآور در عرصه مهارت‌آموزی نوین، آماده‌سازی نسل آینده برای ورود به بازار کار.",
+        "footerCopyrightPersian": "تمامی حقوق این وب‌سایت متعلق به مرکز آموزش علمی کاربردی کوثر کاکی می‌باشد.",
+        "footerCopyrightEnglish": "© 2024 Kowsar Kaki UAST",
+        "contactAddress": "استان بوشهر، شهرستان دشتی، شهر کاکی، بلوار ولیعصر (عج)، جنب میدان انقلاب، مرکز آموزش علمی کاربردی",
+        "contactPhone": "۰۷۷ - ۳۵۰۰ ۰۰۰۰",
+        "contactEmail": "info@kowsarkaki-uast.ac.ir",
+        "navLinks": [
+          {
+            "id": "1",
+            "label": "صفحه اصلی",
+            "href": "/"
+          },
+          {
+            "id": "2",
+            "label": "معرفی مرکز",
+            "href": "/presentation"
+          },
+          {
+            "id": "3",
+            "label": "پذیرش دانشجو",
+            "href": "/register"
+          },
+          {
+            "id": "4",
+            "label": "جزوه و فرم‌ها",
+            "href": "/forms"
+          },
+          {
+            "id": "5",
+            "label": "نگارخانه",
+            "href": "/gallery"
+          },
+          {
+            "id": "6",
+            "label": "اخبار و اطلاعیه‌ها",
+            "href": "/news"
+          },
+          {
+            "id": "7",
+            "label": "تماس با ما",
+            "href": "/contact"
+          }
+        ],
+        "quickLinks": [
+          {
+            "id": "1",
+            "label": "پورتال دانشجویی",
+            "href": "#"
+          },
+          {
+            "id": "2",
+            "label": "آیین‌نامه‌های آموزشی",
+            "href": "#"
+          },
+          {
+            "id": "3",
+            "label": "سامانه هم‌آوا (آموزشی)",
+            "href": "#"
+          },
+          {
+            "id": "4",
+            "label": "کتابخانه دیجیتال",
+            "href": "#"
+          }
+        ],
+        "formsWidgets": [
+          {
+            "id": "fw_guide",
+            "title": "راهنمای تحویل و پیگیری فرم‌ها",
+            "iconName": "BookOpen",
+            "type": "text",
+            "isActive": true,
+            "order": 1,
+            "content": "<ul class=\"space-y-3 text-xs text-slate-600 leading-relaxed font-light\"><li class=\"flex items-start gap-2\"><span><strong>پرینت باکیفیت:</strong> فرم‌ها را روی کاغذ استاندارد A4 تکمیل نمایید.</span></li><li class=\"flex items-start gap-2\"><span><strong>امضای متقاضی:</strong> امضای دانشجو در انتهای فرم‌ها الزامی است.</span></li></ul>"
+          },
+          {
+            "id": "fw_links",
+            "title": "سامانه‌های مرتبط و ضروری",
+            "iconName": "ExternalLink",
+            "type": "higher_ed_systems",
+            "isActive": true,
+            "order": 2,
+            "links": []
+          }
+        ],
+        "newsWidgets": [
+          {
+            "id": "nw_links",
+            "title": "دسترسی‌های سریع دانشجویی",
+            "iconName": "FileText",
+            "type": "links",
+            "isActive": true,
+            "order": 1,
+            "links": [
+              {
+                "id": "nl_1",
+                "title": "ثبت‌نام و پذیرش دانشجو",
+                "url": "/register",
+                "iconName": "UserPlus",
+                "bgColor": "blue"
+              },
+              {
+                "id": "nl_2",
+                "title": "فرم‌های ضروری و آیین‌نامه‌ها",
+                "url": "/forms",
+                "iconName": "FileText",
+                "bgColor": "slate"
+              },
+              {
+                "id": "nl_3",
+                "title": "سامانه جامع آموزشی هم‌آوا",
+                "url": "https://edu.uast.ac.ir",
+                "iconName": "Building2",
+                "bgColor": "slate"
+              }
+            ]
+          },
+          {
+            "id": "nw_categories",
+            "title": "دسته‌بندی موضوعی",
+            "iconName": "Layers",
+            "type": "dynamic_categories",
+            "isActive": true,
+            "order": 2
+          },
+          {
+            "id": "nw_tags",
+            "title": "برچسب‌های پرتکرار",
+            "iconName": "Tag",
+            "type": "dynamic_tags",
+            "isActive": true,
+            "order": 3
+          }
+        ],
+        "higherEdSystems": [
+          {
+            "id": "sys1",
+            "title": "وزارت علوم، تحقیقات و فناوری",
+            "url": "https://msrt.ir",
+            "isActive": true,
+            "order": 1
+          },
+          {
+            "id": "sys2",
+            "title": "دانشگاه جامع علمی کاربردی",
+            "url": "https://uast.ac.ir",
+            "isActive": true,
+            "order": 2
+          },
+          {
+            "id": "sys3",
+            "title": "صندوق رفاه دانشجویان",
+            "url": "https://swf.ir",
+            "isActive": true,
+            "order": 3
+          },
+          {
+            "id": "sys4",
+            "title": "سازمان سنجش آموزش کشور",
+            "url": "https://sanjesh.org",
+            "isActive": true,
+            "order": 4
+          }
+        ],
+        "customButtons": [
+          {
+            "id": "1",
+            "label": "ثبت‌نام آنلاین",
+            "href": "/register",
+            "style": "primary"
+          },
+          {
+            "id": "2",
+            "label": "جزوه و فرم‌ها",
+            "href": "/forms",
+            "style": "outline"
+          }
+        ],
+        "enableStudentPortalButton": false,
+        "enableQuickReceiptButton": true,
+        "quickReceiptButtonLabel": "ارسال فیش واریزی",
+        "quickReceiptConfig": {
+          "enabled": true,
+          "pageTitle": "سامانه ارسال سریع فیش واریزی",
+          "pageSubtitle": "ثبت آنی و آسان فیش‌های پرداختی شهریه و امور رفاهی بدون نیاز به ورود به پورتال",
+          "noticeTitle": "اطلاعیه و راهنمای مهم قبل از واریز وجه",
+          "noticeText": "دانشجویان گرامی لطفاً مبالغ واریزی را صرفاً به حساب‌های رسمی مرکز واریز فرموده و تصویر واضح رسید یا اسکرین‌شات پرداخت همراه با کد پیگیری بانکی را ثبت فرمایید.",
+          "guidelines": [
+            "واریز را ترجیحاً با کارت به نام دانشجو انجام داده و یا نام دانشجو را در توضیحات قید فرمایید.",
+            "رسیدهای ارسالی ظرف حداکثر ۲۴ الی ۴۸ ساعت کاری توسط امور مالی بررسی و در سامانه هم‌آوا اعمال خواهد شد.",
+            "اصل فیش بانکی یا تصویر تراکنش را تا پایان نیم‌سال تحصیلی جاری نزد خود نگهداری فرمایید.",
+            "پس از ثبت موفق، حتماً کد پیگیری اختصاصی را جهت استعلام‌های بعدی یادداشت فرمایید."
+          ],
+          "accounts": [
+            {
+              "id": "acc-1",
+              "bankName": "بانک ملی ایران",
+              "accountOwner": "مرکز آموزش علمی کاربردی کوثر کاکی",
+              "accountNumber": "۰۱۰۷۶۵۴۳۲۱۰۰۵",
+              "cardNumber": "۶۰۳۷-۹۹۷۵-۱۲۳۴-۵۶۷۸",
+              "shebaNumber": "IR۷۲۰۱۷۰۰۰۰۰۰۰۱۰۷۶۵۴۳۲۱۰۰۵",
+              "isDefault": true
+            }
+          ],
+          "categories": [
+            {
+              "id": "cat-1",
+              "label": "شهریه متغیر نیم‌سال جاری",
+              "title": "شهریه متغیر نیم‌سال جاری",
+              "isActive": false
+            },
+            {
+              "id": "cat-2",
+              "label": "شهریه ثابت",
+              "title": "شهریه ثابت",
+              "isActive": false
+            },
+            {
+              "id": "cat-3",
+              "label": "تسویه بدهی سنوات گذشته",
+              "title": "تسویه بدهی سنوات گذشته",
+              "isActive": false
+            },
+            {
+              "id": "cat-4",
+              "label": "هزینه خدمات آموزشی و صدور مدرک",
+              "title": "هزینه خدمات آموزشی و صدور مدرک",
+              "isActive": false
+            },
+            {
+              "id": "cat-5",
+              "label": "هزینه خوابگاه و امور دانشجویی",
+              "title": "هزینه خوابگاه و امور دانشجویی",
+              "isActive": false
+            },
+            {
+              "id": "cat-6",
+              "label": "سایر واریزی‌ها",
+              "title": "سایر واریزی‌ها",
+              "isActive": false
+            },
+            {
+              "id": "cat-1789028881813",
+              "title": "پرداخت شهریه",
+              "isActive": true
+            }
+          ],
+          "receiptReviewDays": "حداکثر ۲۴ الی ۴۸ ساعت اداری",
+          "supportPhone": "07735312020-09938681524",
+          "supportMobile": "۰۹۱۷۱۷۰۰۰۰۰",
+          "supportTelegram": "kowsar_finance",
+          "supportEitaa": "kowsar_finance",
+          "allowStudentAutoLookup": true,
+          "requireNationalCode": true,
+          "requireStudentMobile": true,
+          "successTitle": "فیش واریزی شما با موفقیت ثبت شد",
+          "successMessage": "کد پیگیری اختصاصی برای رسید شما صادر گردید. کارشناسان امور مالی پس از بررسی بانکی، مبلغ را در پرونده آموزشی و مالی شما منظور خواهند کرد.",
+          "bankAccounts": [
+            {
+              "id": "bank-1789028908495",
+              "bankName": "بانک صادرات ایران",
+              "accountNumber": "",
+              "cardNumber": "6037691990703811",
+              "shebaNumber": "",
+              "accountOwner": "گروه سه هزار و هفتصد و ...",
+              "isDefault": true
+            }
+          ]
+        },
+        "headerButtons": [
+          {
+            "id": "quick-receipt-btn",
+            "label": "ارسال فیش واریزی",
+            "href": "/submit-receipt",
+            "style": "primary"
+          },
+          {
+            "id": "2",
+            "label": "هم‌آوا",
+            "href": "https://hamava.uast.ac.ir",
+            "style": "outline"
+          }
+        ],
+        "studyFields": [
+          {
+            "id": "f1",
+            "name": "فناوری اطلاعات (IT)",
+            "value": "it",
+            "degreeType": "both",
+            "isActive": true,
+            "order": 1
+          },
+          {
+            "id": "f2",
+            "name": "حسابداری مالی",
+            "value": "accounting",
+            "degreeType": "both",
+            "isActive": true,
+            "order": 2
+          },
+          {
+            "id": "f3",
+            "name": "مدیریت کسب و کار",
+            "value": "management",
+            "degreeType": "both",
+            "isActive": true,
+            "order": 3
+          },
+          {
+            "id": "f4",
+            "name": "حقوق ثبتی",
+            "value": "law",
+            "degreeType": "both",
+            "isActive": true,
+            "order": 4
+          },
+          {
+            "id": "f5",
+            "name": "مکانیک خودرو",
+            "value": "mechanic",
+            "degreeType": "both",
+            "isActive": true,
+            "order": 5
+          }
+        ],
         "site_title": "مرکز آموزش علمی کاربردی کوثر کاکی",
         "site_subtitle": "وابسته به دانشگاه جامع علمی کاربردی",
         "logo_url": "",
@@ -23,7 +456,7 @@
           "bale": "https://ble.ir/kowsar_ac"
         }
       },
-      "updated_at": "2026-09-07T05:34:52.903Z"
+      "updated_at": "2026-09-10T08:28:50.682Z"
     },
     {
       "id": 2,
@@ -328,6 +761,47 @@
   "financial_receipts": [],
   "contact_messages": [],
   "system_logs": [],
-  "security_logs": [],
+  "security_logs": [
+    {
+      "id": 1789028822192,
+      "created_at": "2026-09-10T08:27:02.192Z",
+      "updated_at": "2026-09-10T08:27:02.192Z",
+      "event_type": "FAILED_LOGIN_WRONG_PASSWORD",
+      "ip_address": "169.254.169.126",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "details": {
+        "email": "elmi_admin@kowsar.ac.ir",
+        "userId": "admin-main-elmi"
+      }
+    },
+    {
+      "id": 1789028832622,
+      "created_at": "2026-09-10T08:27:12.622Z",
+      "updated_at": "2026-09-10T08:27:12.622Z",
+      "event_type": "SUCCESSFUL_LOGIN",
+      "ip_address": "169.254.169.126",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "details": {
+        "email": "elmi_admin",
+        "name": "مدیر اصلی سامانه",
+        "role": "super_admin",
+        "permissionsCount": 18
+      }
+    },
+    {
+      "id": 1789030056509,
+      "created_at": "2026-09-10T08:47:36.509Z",
+      "updated_at": "2026-09-10T08:47:36.509Z",
+      "event_type": "SUCCESSFUL_LOGIN",
+      "ip_address": "169.254.169.126",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "details": {
+        "email": "elmi_admin",
+        "name": "مدیر اصلی سامانه",
+        "role": "super_admin",
+        "permissionsCount": 18
+      }
+    }
+  ],
   "uploaded_files": []
 }

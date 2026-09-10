@@ -12,7 +12,18 @@ export function toEnglishDigits(str: string | number | undefined | null): string
   if (!str) return '';
   return String(str)
     .replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
+    .replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
     .replace(/[^0-9]/g, '');
+}
+
+/**
+ * Replaces Persian and Arabic digits with standard English digits WITHOUT removing other characters (letters, hyphens, etc.)
+ */
+export function replacePersianWithEnglishDigits(str: string | number | undefined | null): string {
+  if (!str) return '';
+  return String(str)
+    .replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)))
+    .replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
 }
 
 /**

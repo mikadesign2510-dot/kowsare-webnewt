@@ -1,4 +1,5 @@
 import { newsItems as initialNewsItems } from '../data';
+import { replacePersianWithEnglishDigits, toPersianDigits } from './persianNumberHelper';
 
 export type Role = 'super_admin' | 'education_expert' | 'cultural_expert' | 'custom_expert';
 
@@ -126,6 +127,172 @@ export const defaultPinnedSliderConfig: PinnedNewsSliderConfig = {
   roundedCorners: 'large'
 };
 
+export interface QuickReceiptBankAccount {
+  id: string;
+  bankName: string;
+  accountOwner: string;
+  accountNumber: string;
+  cardNumber: string;
+  shebaNumber: string;
+  isDefault?: boolean;
+}
+
+export interface QuickReceiptCategory {
+  id: string;
+  label?: string;
+  title?: string;
+  isActive: boolean;
+}
+
+export type BankAccount = QuickReceiptBankAccount;
+export type ReceiptCategory = QuickReceiptCategory;
+
+export interface QuickReceiptConfig {
+  enabled: boolean;
+  pageTitle: string;
+  pageSubtitle: string;
+  
+  // بخش‌ها و باکس‌های کلیدی صفحه
+  showNoticeBox: boolean;
+  noticeTitle: string;
+  noticeText: string;
+  guidelines: string[];
+  importantGuidelines?: string[];
+  
+  showBankAccountsBox: boolean;
+  accounts: QuickReceiptBankAccount[];
+  bankAccounts?: QuickReceiptBankAccount[];
+  
+  showCategories: boolean;
+  categories: QuickReceiptCategory[];
+  
+  // باکس‌ها و فیلدهای ورودی فرم (قابلیت فعال/غیرفعال‌سازی توسط مدیر)
+  showNationalCodeField: boolean;
+  requireNationalCode: boolean;
+  
+  showFullNameField: boolean;
+  requireFullName: boolean;
+  
+  showMobileField: boolean;
+  requireStudentMobile: boolean;
+  
+  showCategoryField: boolean;
+  requireCategory: boolean;
+  
+  showDepositDateField: boolean;
+  requireDepositDate: boolean;
+  
+  showAmountField: boolean;
+  requireAmount: boolean;
+  
+  showBankRefNumberField: boolean;
+  requireBankRefNumber: boolean;
+  
+  showOriginBankField: boolean;
+  requireOriginBank: boolean;
+  
+  showStudentNoteField: boolean;
+  requireStudentNote: boolean;
+  
+  showReceiptUploadField: boolean;
+  requireReceiptUpload: boolean;
+  
+  showTrackingTab: boolean;
+  showSupportContactBox: boolean;
+
+  maxFileSizeMB: number; // پیش‌فرض ۱۰ مگابایت
+  receiptReviewDays: string;
+  supportPhone: string;
+  supportMobile?: string;
+  supportTelegram?: string;
+  supportEitaa?: string;
+  allowStudentAutoLookup: boolean;
+  successTitle: string;
+  successMessage: string;
+}
+
+export const defaultQuickReceiptConfig: QuickReceiptConfig = {
+  enabled: true,
+  pageTitle: 'سامانه ارسال سریع فیش واریزی',
+  pageSubtitle: 'ثبت آنی و آسان فیش‌های پرداختی شهریه و امور رفاهی بدون نیاز به ورود به پورتال',
+  
+  showNoticeBox: true,
+  noticeTitle: 'اطلاعیه و راهنمای مهم قبل از واریز وجه',
+  noticeText: 'دانشجویان گرامی لطفاً مبالغ واریزی را صرفاً به حساب‌های رسمی مرکز واریز فرموده و تصویر واضح رسید یا اسکرین‌شات پرداخت همراه با کد پیگیری بانکی را ثبت فرمایید.',
+  guidelines: [
+    'واریز را ترجیحاً با کارت به نام دانشجو انجام داده و یا نام دانشجو را در توضیحات قید فرمایید.',
+    'رسیدهای ارسالی ظرف حداکثر ۲۴ الی ۴۸ ساعت کاری توسط امور مالی بررسی و در سامانه هم‌آوا اعمال خواهد شد.',
+    'اصل فیش بانکی یا تصویر تراکنش را تا پایان نیم‌سال تحصیلی جاری نزد خود نگهداری فرمایید.',
+    'پس از ثبت موفق، حتماً کد پیگیری اختصاصی را جهت استعلام‌های بعدی یادداشت فرمایید.'
+  ],
+  
+  showBankAccountsBox: true,
+  accounts: [
+    {
+      id: 'acc-1',
+      bankName: 'بانک ملی ایران',
+      accountOwner: 'مرکز آموزش علمی کاربردی کوثر کاکی',
+      accountNumber: '۰۱۰۷۶۵۴۳۲۱۰۰۵',
+      cardNumber: '۶۰۳۷-۹۹۷۵-۱۲۳۴-۵۶۷۸',
+      shebaNumber: 'IR۷۲۰۱۷۰۰۰۰۰۰۰۱۰۷۶۵۴۳۲۱۰۰۵',
+      isDefault: true
+    }
+  ],
+  
+  showCategories: true,
+  categories: [
+    { id: 'cat-1', label: 'شهریه متغیر نیم‌سال جاری', title: 'شهریه متغیر نیم‌سال جاری', isActive: true },
+    { id: 'cat-2', label: 'شهریه ثابت', title: 'شهریه ثابت', isActive: true },
+    { id: 'cat-3', label: 'تسویه بدهی سنوات گذشته', title: 'تسویه بدهی سنوات گذشته', isActive: true },
+    { id: 'cat-4', label: 'هزینه خدمات آموزشی و صدور مدرک', title: 'هزینه خدمات آموزشی و صدور مدرک', isActive: true },
+    { id: 'cat-5', label: 'هزینه خوابگاه و امور دانشجویی', title: 'هزینه خوابگاه و امور دانشجویی', isActive: true },
+    { id: 'cat-6', label: 'سایر واریزی‌ها', title: 'سایر واریزی‌ها', isActive: true }
+  ],
+  
+  showNationalCodeField: true,
+  requireNationalCode: true,
+  
+  showFullNameField: true,
+  requireFullName: true,
+  
+  showMobileField: true,
+  requireStudentMobile: true,
+  
+  showCategoryField: true,
+  requireCategory: true,
+  
+  showDepositDateField: true,
+  requireDepositDate: true,
+  
+  showAmountField: true,
+  requireAmount: true,
+  
+  showBankRefNumberField: true,
+  requireBankRefNumber: false,
+  
+  showOriginBankField: true,
+  requireOriginBank: false,
+  
+  showStudentNoteField: true,
+  requireStudentNote: false,
+  
+  showReceiptUploadField: true,
+  requireReceiptUpload: true,
+  
+  showTrackingTab: true,
+  showSupportContactBox: true,
+  
+  maxFileSizeMB: 10,
+  receiptReviewDays: 'حداکثر ۲۴ الی ۴۸ ساعت اداری',
+  supportPhone: '۰۷۷-۳۵۳۲۰۰۰۰ (داخلی ۱۰۲)',
+  supportMobile: '۰۹۱۷۱۷۰۰۰۰۰',
+  supportTelegram: 'kowsar_finance',
+  supportEitaa: 'kowsar_finance',
+  allowStudentAutoLookup: true,
+  successTitle: 'فیش واریزی شما با موفقیت ثبت شد',
+  successMessage: 'کد پیگیری اختصاصی برای رسید شما صادر گردید. کارشناسان امور مالی پس از بررسی بانکی، مبلغ را در پرونده آموزشی و مالی شما منظور خواهند کرد.'
+};
+
 export interface SiteSettings {
   logoUrl?: string;
   logoTitle?: string;
@@ -172,6 +339,10 @@ export interface SiteSettings {
   quickLinks: LinkItem[];
   customButtons: CustomButton[];
   headerButtons?: CustomButton[];
+  enableStudentPortalButton?: boolean;
+  enableQuickReceiptButton?: boolean;
+  quickReceiptButtonLabel?: string;
+  quickReceiptConfig?: QuickReceiptConfig;
   formsWidgets?: SidebarWidget[];
   newsWidgets?: SidebarWidget[];
   higherEdSystems?: HigherEdSystem[];
@@ -913,9 +1084,13 @@ const defaultSettings: SiteSettings = {
     { id: '1', label: 'ثبت‌نام آنلاین', href: '/register', style: 'primary' },
     { id: '2', label: 'جزوه و فرم‌ها', href: '/forms', style: 'outline' }
   ],
+  enableStudentPortalButton: false,
+  enableQuickReceiptButton: true,
+  quickReceiptButtonLabel: 'ارسال فیش واریزی',
+  quickReceiptConfig: defaultQuickReceiptConfig,
   headerButtons: [
-    { id: '1', label: 'پنل دانشجویی', href: '/portal/login', style: 'outline' },
-    { id: '2', label: 'هم‌آوا', href: 'https://hamava.uast.ac.ir', style: 'primary' }
+    { id: 'quick-receipt-btn', label: 'ارسال فیش واریزی', href: '/submit-receipt', style: 'primary' },
+    { id: '2', label: 'هم‌آوا', href: 'https://hamava.uast.ac.ir', style: 'outline' }
   ],
   studyFields: [
     { id: 'f1', name: 'فناوری اطلاعات (IT)', value: 'it', degreeType: 'both', isActive: true, order: 1 },
@@ -1180,6 +1355,7 @@ export interface FinancialReceipt {
   userId: string;
   userName: string;
   studentId: string;
+  userNationalId?: string;
   amount: string;
   trackingCode: string;
   date: string;
@@ -1187,6 +1363,11 @@ export interface FinancialReceipt {
   imageUrl: string;
   status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
+  adminMessage?: string;
+  studentMobile?: string;
+  category?: string;
+  bankRefNumber?: string;
+  submissionType?: 'quick' | 'portal';
 }
 
 export type PresentationFrameStyle = 
@@ -1312,29 +1493,75 @@ export const storage = {
       let navLinks = parsed.navLinks || defaultSettings.navLinks;
       let headerButtons = parsed.headerButtons;
 
+      const enableStudentPortal = parsed.enableStudentPortalButton === true;
+      const enableQuickReceipt = parsed.enableQuickReceiptButton !== false;
+
       if (!headerButtons || headerButtons.length === 0) {
-        headerButtons = defaultSettings.headerButtons;
+        headerButtons = [
+          ...(enableQuickReceipt ? [{ id: 'quick-receipt-btn', label: parsed.quickReceiptButtonLabel || 'ارسال فیش واریزی', href: '/submit-receipt', style: 'primary' as const }] : []),
+          ...(enableStudentPortal ? [{ id: '1', label: 'پنل دانشجویی', href: '/portal/login', style: 'outline' as const }] : []),
+          { id: '2', label: 'هم‌آوا', href: 'https://hamava.uast.ac.ir', style: 'outline' as const }
+        ];
       } else {
-        // Ensure any button for portal/login or formerly named "میز خدمت" is renamed to "پنل دانشجویی"
+        // Ensure any button for portal/login or formerly named "میز خدمت" is normalized
         headerButtons = headerButtons.map((btn: any) => {
           if (btn.label === 'میز خدمت' || btn.href === '/portal/login' || btn.href === '/portal' || btn.id === '1') {
             return { ...btn, label: 'پنل دانشجویی', href: '/portal/login' };
           }
+          if (btn.href === '/submit-receipt' || btn.id === 'quick-receipt-btn') {
+            return { ...btn, label: parsed.quickReceiptButtonLabel || 'ارسال فیش واریزی', href: '/submit-receipt' };
+          }
           return btn;
         });
 
-        // Ensure "پنل دانشجویی" is present in headerButtons
-        if (!headerButtons.some((btn: any) => btn.label === 'پنل دانشجویی' || btn.href === '/portal/login')) {
-          headerButtons = [
-            { id: '1', label: 'پنل دانشجویی', href: '/portal/login', style: 'outline' },
-            ...headerButtons
-          ];
+        // Filter student portal button if disabled
+        if (!enableStudentPortal) {
+          headerButtons = headerButtons.filter((btn: any) => 
+            btn.href !== '/portal/login' && btn.href !== '/portal' && btn.label !== 'پنل دانشجویی'
+          );
+        } else {
+          if (!headerButtons.some((btn: any) => btn.label === 'پنل دانشجویی' || btn.href === '/portal/login')) {
+            headerButtons = [
+              { id: '1', label: 'پنل دانشجویی', href: '/portal/login', style: 'outline' },
+              ...headerButtons
+            ];
+          }
+        }
+
+        // Handle Quick Receipt button
+        if (enableQuickReceipt) {
+          if (!headerButtons.some((btn: any) => btn.href === '/submit-receipt' || btn.id === 'quick-receipt-btn')) {
+            headerButtons = [
+              { id: 'quick-receipt-btn', label: parsed.quickReceiptButtonLabel || 'ارسال فیش واریزی', href: '/submit-receipt', style: 'primary' },
+              ...headerButtons
+            ];
+          }
+        } else {
+          headerButtons = headerButtons.filter((btn: any) => 
+            btn.href !== '/submit-receipt' && btn.id !== 'quick-receipt-btn'
+          );
         }
       }
 
       return {
         ...defaultSettings,
         ...parsed,
+        enableStudentPortalButton: enableStudentPortal,
+        enableQuickReceiptButton: enableQuickReceipt,
+        quickReceiptButtonLabel: parsed.quickReceiptButtonLabel || defaultSettings.quickReceiptButtonLabel,
+        quickReceiptConfig: {
+          ...defaultQuickReceiptConfig,
+          ...(parsed.quickReceiptConfig || {}),
+          accounts: Array.isArray(parsed.quickReceiptConfig?.accounts) && parsed.quickReceiptConfig.accounts.length > 0
+            ? parsed.quickReceiptConfig.accounts
+            : defaultQuickReceiptConfig.accounts,
+          categories: Array.isArray(parsed.quickReceiptConfig?.categories) && parsed.quickReceiptConfig.categories.length > 0
+            ? parsed.quickReceiptConfig.categories
+            : defaultQuickReceiptConfig.categories,
+          guidelines: Array.isArray(parsed.quickReceiptConfig?.guidelines) && parsed.quickReceiptConfig.guidelines.length > 0
+            ? parsed.quickReceiptConfig.guidelines
+            : defaultQuickReceiptConfig.guidelines,
+        },
         navLinks,
         headerButtons,
         statsItems: parsed.statsItems?.length ? parsed.statsItems : defaultStats,
@@ -3244,6 +3471,145 @@ export const storage = {
         console.warn(e);
       }
     }
+  },
+
+  generateUniqueReceiptTrackingCode: (): string => {
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const receipts = storage.getReceipts();
+    
+    for (let i = 0; i < 30; i++) {
+      const rand = Math.floor(10000 + Math.random() * 90000);
+      const candidate = `KOW-${yy}${mm}${dd}-${rand}`;
+      if (!receipts.some(r => r.trackingCode === candidate)) {
+        return candidate;
+      }
+    }
+    return `KOW-${yy}${mm}${dd}-${Date.now().toString().slice(-5)}`;
+  },
+
+  addQuickReceipt: async (receiptData: {
+    userName: string;
+    userNationalId: string;
+    studentMobile: string;
+    amount: string;
+    date: string;
+    category: string;
+    bankRefNumber?: string;
+    description?: string;
+    imageUrl: string;
+  }): Promise<{ success: boolean; receipt: FinancialReceipt; trackingCode: string }> => {
+    const receipts = storage.getReceipts();
+    const trackingCode = storage.generateUniqueReceiptTrackingCode();
+    const rcptId = `rcpt-quick-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+    
+    const newReceipt: FinancialReceipt = {
+      id: rcptId,
+      userId: `std_${receiptData.userNationalId || 'guest'}`,
+      userName: receiptData.userName,
+      studentId: receiptData.userNationalId,
+      userNationalId: receiptData.userNationalId,
+      amount: receiptData.amount,
+      trackingCode,
+      date: receiptData.date,
+      description: receiptData.description || '',
+      imageUrl: receiptData.imageUrl,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      studentMobile: receiptData.studentMobile,
+      category: receiptData.category,
+      bankRefNumber: receiptData.bankRefNumber || '',
+      submissionType: 'quick'
+    };
+
+    receipts.unshift(newReceipt);
+    storage.saveReceipts(receipts);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('kowsar_receipts_changed'));
+    }
+
+    try {
+      const res = await fetch('/api/receipts/quick-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newReceipt)
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.trackingCode) {
+          newReceipt.trackingCode = json.trackingCode;
+          // بروزرسانی کد پیگیری تأیید شده سرور در حافظه محلی
+          const updatedReceipts = storage.getReceipts();
+          const idx = updatedReceipts.findIndex(r => r.id === rcptId);
+          if (idx !== -1) {
+            updatedReceipts[idx].trackingCode = json.trackingCode;
+            storage.saveReceipts(updatedReceipts);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Quick receipt server submit error (saved locally):', e);
+    }
+
+    return { success: true, receipt: newReceipt, trackingCode: newReceipt.trackingCode };
+  },
+
+  trackReceipt: async (query: string): Promise<FinancialReceipt[]> => {
+    const rawQuery = (query || '').trim();
+    if (!rawQuery) return [];
+
+    // نرمال‌سازی ارقام فارسی و انگلیسی
+    const engQuery = replacePersianWithEnglishDigits(rawQuery).trim().toLowerCase();
+    const perQuery = toPersianDigits(engQuery);
+
+    // جستجو در رسیدهای محلی با تمام حالات ارقام فارسی و انگلیسی
+    const local = storage.getReceipts().filter(r => {
+      const tCode = String(r.trackingCode || '').trim().toLowerCase();
+      const nId = String(r.userNationalId || r.studentId || '').trim().toLowerCase();
+      const mob = String(r.studentMobile || '').trim().toLowerCase();
+
+      return (
+        tCode === engQuery || tCode === rawQuery.toLowerCase() ||
+        nId === engQuery || nId === perQuery ||
+        mob === engQuery || mob === perQuery
+      );
+    });
+
+    // جستجو و همگام‌سازی از سرور اصلی
+    try {
+      const res = await fetch(`/api/receipts/quick-track/${encodeURIComponent(engQuery)}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const map = new Map<string, FinancialReceipt>();
+          json.data.forEach((r: FinancialReceipt) => map.set(r.id, r));
+          local.forEach(r => {
+            if (!map.has(r.id)) map.set(r.id, r);
+          });
+          return Array.from(map.values()).sort((a, b) => 
+            new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+          );
+        }
+      }
+    } catch (e) {
+      console.warn('Server track receipt query failed, returning local matches:', e);
+    }
+
+    return local;
+  },
+
+  lookupStudent: (query: string): Student | null => {
+    const clean = query.trim();
+    if (!clean) return null;
+    const students = storage.getStudents();
+    const found = students.find(s => 
+      String(s.nationalCode || '').trim() === clean ||
+      String(s.studentId || '').trim() === clean ||
+      String(s.phone || '').trim() === clean
+    );
+    return found || null;
   },
 
   seedPortalUsers: () => {

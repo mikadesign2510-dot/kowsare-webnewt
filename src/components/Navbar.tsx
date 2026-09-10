@@ -1,4 +1,4 @@
-import { Menu, X, Library, GraduationCap } from 'lucide-react';
+import { Menu, X, Library, GraduationCap, Receipt } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { storage } from '../lib/storage';
@@ -23,7 +23,10 @@ export default function Navbar() {
     ? settings.navLinks.filter(link => link.isActive !== false) 
     : [];
 
-  const headerButtons = (settings.headerButtons || [])
+  const enableStudentPortal = settings.enableStudentPortalButton === true;
+  const enableQuickReceipt = settings.enableQuickReceiptButton !== false;
+
+  const rawHeaderButtons = (settings.headerButtons || [])
     .filter(btn => {
       const href = (btn.href || '').trim().toLowerCase();
       const label = (btn.label || '').trim();
@@ -43,18 +46,43 @@ export default function Navbar() {
       if (btn.label === 'میز خدمت' || btn.href === '/portal/login' || btn.href === '/portal') {
         return { ...btn, label: 'پنل دانشجویی', href: '/portal/login' };
       }
+      if (btn.href === '/submit-receipt' || btn.id === 'quick-receipt-btn') {
+        return { ...btn, label: settings.quickReceiptButtonLabel || 'ارسال فیش واریزی', href: '/submit-receipt' };
+      }
       return btn;
     });
 
-  // Guarantee that "پنل دانشجویی" is present in headerButtons
-  const resolvedHeaderButtons = [...headerButtons];
-  if (!resolvedHeaderButtons.some(b => b.href === '/portal/login' || b.label === 'پنل دانشجویی')) {
-    resolvedHeaderButtons.unshift({
-      id: 'student-portal-btn',
-      label: 'پنل دانشجویی',
-      href: '/portal/login',
-      style: 'outline'
-    });
+  // Filter or inject student portal and quick receipt buttons according to settings
+  let resolvedHeaderButtons = [...rawHeaderButtons];
+
+  if (!enableStudentPortal) {
+    resolvedHeaderButtons = resolvedHeaderButtons.filter(b => 
+      b.href !== '/portal/login' && b.href !== '/portal' && b.label !== 'پنل دانشجویی'
+    );
+  } else {
+    if (!resolvedHeaderButtons.some(b => b.href === '/portal/login' || b.label === 'پنل دانشجویی')) {
+      resolvedHeaderButtons.push({
+        id: 'student-portal-btn',
+        label: 'پنل دانشجویی',
+        href: '/portal/login',
+        style: 'outline'
+      });
+    }
+  }
+
+  if (enableQuickReceipt) {
+    if (!resolvedHeaderButtons.some(b => b.href === '/submit-receipt' || b.id === 'quick-receipt-btn')) {
+      resolvedHeaderButtons.unshift({
+        id: 'quick-receipt-btn',
+        label: settings.quickReceiptButtonLabel || 'ارسال فیش واریزی',
+        href: '/submit-receipt',
+        style: 'primary'
+      });
+    }
+  } else {
+    resolvedHeaderButtons = resolvedHeaderButtons.filter(b => 
+      b.href !== '/submit-receipt' && b.id !== 'quick-receipt-btn'
+    );
   }
 
   const isLinkActive = (href: string) => {
@@ -144,6 +172,7 @@ export default function Navbar() {
                 {resolvedHeaderButtons.map(btn => {
                   const isExternal = btn.href.startsWith('http://') || btn.href.startsWith('https://') || btn.href.startsWith('//');
                   const isStudentPortal = btn.href === '/portal/login' || btn.href.startsWith('/portal') || btn.label.includes('دانشجو');
+                  const isQuickReceipt = btn.href === '/submit-receipt' || btn.id === 'quick-receipt-btn' || btn.label.includes('فیش');
                   const className = btn.style === 'primary'
                     ? "inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-[0_4px_15px_rgba(37,99,235,0.2)] transition-all transform hover:-translate-y-0.5 text-sm whitespace-nowrap"
                     : "inline-flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-blue-50/80 text-slate-700 hover:text-blue-700 font-bold px-4 py-2.5 rounded-xl transition-all text-sm whitespace-nowrap border border-slate-200 hover:border-blue-200";
@@ -151,6 +180,7 @@ export default function Navbar() {
                   if (isExternal) {
                     return (
                       <a key={btn.id} href={btn.href} target="_blank" rel="noopener noreferrer" className={className}>
+                        {isQuickReceipt && <Receipt className="w-4 h-4 text-white" />}
                         {isStudentPortal && <GraduationCap className="w-4 h-4 text-blue-600" />}
                         <span>{btn.label}</span>
                       </a>
@@ -163,6 +193,7 @@ export default function Navbar() {
                       to={btn.href}
                       className={className}
                     >
+                      {isQuickReceipt && <Receipt className="w-4 h-4 text-white" />}
                       {isStudentPortal && <GraduationCap className="w-4 h-4 text-blue-600" />}
                       <span>{btn.label}</span>
                     </Link>
@@ -233,6 +264,7 @@ export default function Navbar() {
                   {resolvedHeaderButtons.map(btn => {
                     const isExternal = btn.href.startsWith('http://') || btn.href.startsWith('https://') || btn.href.startsWith('//');
                     const isStudentPortal = btn.href === '/portal/login' || btn.href.startsWith('/portal') || btn.label.includes('دانشجو');
+                    const isQuickReceipt = btn.href === '/submit-receipt' || btn.id === 'quick-receipt-btn' || btn.label.includes('فیش');
                     const className = btn.style === 'primary'
                       ? "flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-3 rounded-xl shadow-[0_4px_15px_rgba(37,99,235,0.2)] transition-all"
                       : "flex items-center justify-center gap-2 w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-4 py-3 rounded-xl transition-all";
@@ -247,6 +279,7 @@ export default function Navbar() {
                           onClick={() => setIsOpen(false)}
                           className={className}
                         >
+                          {isQuickReceipt && <Receipt className="w-4 h-4 text-white" />}
                           {isStudentPortal && <GraduationCap className="w-4 h-4 text-indigo-600" />}
                           <span>{btn.label}</span>
                         </a>
@@ -260,6 +293,7 @@ export default function Navbar() {
                         onClick={() => setIsOpen(false)}
                         className={className}
                       >
+                        {isQuickReceipt && <Receipt className="w-4 h-4 text-white" />}
                         {isStudentPortal && <GraduationCap className="w-4 h-4 text-indigo-600" />}
                         <span>{btn.label}</span>
                       </Link>

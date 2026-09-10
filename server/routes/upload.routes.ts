@@ -16,6 +16,7 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 // Pre-create known section subdirectories
 // پوشه‌های اختصاصی جزوات، درسنامه‌ها و فرم‌های دانشگاهی در سرور
 const DEFAULT_FOLDERS = [
+  'receipts',  // پوشه اختصاصی فیش‌های واریزی دانشجویان روی هاست
   'pamphlets', // پوشه اختصاصی جزوات، درسنامه‌ها و کتب آموزشی دانشگاه
   'forms',     // پوشه اختصاصی فرم‌ها و کاربرگ‌های اداری و مالی
   'banners', 
@@ -132,6 +133,16 @@ router.post('/', (req: Request, res: Response) => {
 
       const folder = req.query.folder || req.headers['x-upload-folder'] || req.body?.folder;
       const { safeFolder, targetDir } = getTargetDir(folder);
+
+      // محدودیت حجم ۱۰ مگابایت برای فیش‌های واریزی
+      if (safeFolder === 'receipts' && req.file.size > 10 * 1024 * 1024) {
+        try { fs.unlinkSync(path.join(targetDir, req.file.filename)); } catch {}
+        return res.status(400).json({
+          success: false,
+          message: 'حجم مجاز برای ارسال فیش واریزی حداکثر ۱۰ مگابایت می‌باشد.'
+        });
+      }
+
       const fileUrl = `/uploads/${safeFolder}/${req.file.filename}`;
       const fileSizeMB = (req.file.size / (1024 * 1024)).toFixed(2);
 

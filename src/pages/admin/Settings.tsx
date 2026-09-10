@@ -1,8 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { storage, SiteSettings, StatItem } from '../../lib/storage';
+import { storage, SiteSettings, StatItem, BankAccount, ReceiptCategory, defaultQuickReceiptConfig } from '../../lib/storage';
 import { uploadFileToServer } from '../../lib/uploadHelper';
-import { Settings, Save, CheckCircle2, Plus, Trash2, Link as LinkIcon, List, BarChart3,  Upload, Image as ImageIcon, Type, Eye, Library,  Menu, Phone, LayoutTemplate, Star, ChevronUp, ChevronDown, ShieldCheck, Crop, GraduationCap, HardDrive } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { 
+  Settings, 
+  Save, 
+  CheckCircle2, 
+  Plus, 
+  Trash2, 
+  Link as LinkIcon, 
+  List, 
+  BarChart3,  
+  Upload, 
+  Image as ImageIcon, 
+  Type, 
+  Eye, 
+  Library,  
+  Menu, 
+  Phone, 
+  LayoutTemplate, 
+  Star, 
+  ChevronUp, 
+  ChevronDown, 
+  ShieldCheck, 
+  Crop, 
+  GraduationCap, 
+  HardDrive,
+  Receipt,
+  CreditCard,
+  Building2,
+  HelpCircle,
+  Check,
+  AlertCircle,
+  FileText,
+  Copy,
+  SlidersHorizontal
+} from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { toPersianDigits, formatPersianDigitSeparators } from '../../lib/persianNumberHelper';
 import ImageCropperModal from '../../components/admin/ImageCropperModal';
 import ServerImagePickerModal from '../../components/admin/ServerImagePickerModal';
 
@@ -11,9 +45,18 @@ export default function AdminSettings() {
   const [isSaved, setIsSaved] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingSysId, setUploadingSysId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'brand' | 'home' | 'navigation' | 'features' | 'footer' | 'higherEd'>('brand');
+  const [activeTab, setActiveTab] = useState<'brand' | 'home' | 'navigation' | 'features' | 'footer' | 'higherEd' | 'quickReceipt'>('brand');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['brand', 'home', 'navigation', 'features', 'footer', 'higherEd', 'quickReceipt'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [location.search]);
 
   // Universal Cropper Modal State
   const [cropperModal, setCropperModal] = useState<{
@@ -255,6 +298,168 @@ export default function AdminSettings() {
     });
   };
 
+  const currentQuickConfig = settings.quickReceiptConfig || defaultQuickReceiptConfig;
+
+  const updateQuickConfig = <K extends keyof typeof defaultQuickReceiptConfig>(field: K, value: typeof defaultQuickReceiptConfig[K]) => {
+    setSettings(prev => ({
+      ...prev,
+      quickReceiptConfig: {
+        ...(prev.quickReceiptConfig || defaultQuickReceiptConfig),
+        [field]: value
+      }
+    }));
+  };
+
+  const handleBankAccountChange = (id: string, field: keyof BankAccount, value: any) => {
+    setSettings(prev => {
+      const cfg = prev.quickReceiptConfig || defaultQuickReceiptConfig;
+      const updatedAccounts = (cfg.bankAccounts || []).map(acc => acc.id === id ? { ...acc, [field]: value } : acc);
+      return {
+        ...prev,
+        quickReceiptConfig: {
+          ...cfg,
+          bankAccounts: updatedAccounts
+        }
+      };
+    });
+  };
+
+  const addBankAccount = () => {
+    setSettings(prev => {
+      const cfg = prev.quickReceiptConfig || defaultQuickReceiptConfig;
+      const newAcc: BankAccount = {
+        id: `bank-${Date.now()}`,
+        bankName: 'بانک ملی ایران',
+        accountNumber: '',
+        cardNumber: '',
+        shebaNumber: '',
+        accountOwner: 'مرکز آموزش علمی کاربردی کوثر کاکی',
+        isDefault: (cfg.bankAccounts || []).length === 0
+      };
+      return {
+        ...prev,
+        quickReceiptConfig: {
+          ...cfg,
+          bankAccounts: [...(cfg.bankAccounts || []), newAcc]
+        }
+      };
+    });
+  };
+
+  const removeBankAccount = (id: string) => {
+    setSettings(prev => {
+      const cfg = prev.quickReceiptConfig || defaultQuickReceiptConfig;
+      return {
+        ...prev,
+        quickReceiptConfig: {
+          ...cfg,
+          bankAccounts: (cfg.bankAccounts || []).filter(acc => acc.id !== id)
+        }
+      };
+    });
+  };
+
+  const setDefaultBankAccount = (id: string) => {
+    setSettings(prev => {
+      const cfg = prev.quickReceiptConfig || defaultQuickReceiptConfig;
+      return {
+        ...prev,
+        quickReceiptConfig: {
+          ...cfg,
+          bankAccounts: (cfg.bankAccounts || []).map(acc => ({
+            ...acc,
+            isDefault: acc.id === id
+          }))
+        }
+      };
+    });
+  };
+
+  const handleCategoryChange = (id: string, field: keyof ReceiptCategory, value: any) => {
+    setSettings(prev => {
+      const cfg = prev.quickReceiptConfig || defaultQuickReceiptConfig;
+      return {
+        ...prev,
+        quickReceiptConfig: {
+          ...cfg,
+          categories: (cfg.categories || []).map(cat => cat.id === id ? { ...cat, [field]: value } : cat)
+        }
+      };
+    });
+  };
+
+  const addCategory = () => {
+    setSettings(prev => {
+      const cfg = prev.quickReceiptConfig || defaultQuickReceiptConfig;
+      const newCat: ReceiptCategory = {
+        id: `cat-${Date.now()}`,
+        title: 'سرفصل واریزی جدید',
+        isActive: true
+      };
+      return {
+        ...prev,
+        quickReceiptConfig: {
+          ...cfg,
+          categories: [...(cfg.categories || []), newCat]
+        }
+      };
+    });
+  };
+
+  const removeCategory = (id: string) => {
+    setSettings(prev => {
+      const cfg = prev.quickReceiptConfig || defaultQuickReceiptConfig;
+      return {
+        ...prev,
+        quickReceiptConfig: {
+          ...cfg,
+          categories: (cfg.categories || []).filter(cat => cat.id !== id)
+        }
+      };
+    });
+  };
+
+  const addGuideline = () => {
+    setSettings(prev => {
+      const cfg = prev.quickReceiptConfig || defaultQuickReceiptConfig;
+      return {
+        ...prev,
+        quickReceiptConfig: {
+          ...cfg,
+          importantGuidelines: [...(cfg.importantGuidelines || []), 'راهنمای جدید']
+        }
+      };
+    });
+  };
+
+  const updateGuideline = (idx: number, val: string) => {
+    setSettings(prev => {
+      const cfg = prev.quickReceiptConfig || defaultQuickReceiptConfig;
+      const updated = [...(cfg.importantGuidelines || [])];
+      updated[idx] = val;
+      return {
+        ...prev,
+        quickReceiptConfig: {
+          ...cfg,
+          importantGuidelines: updated
+        }
+      };
+    });
+  };
+
+  const removeGuideline = (idx: number) => {
+    setSettings(prev => {
+      const cfg = prev.quickReceiptConfig || defaultQuickReceiptConfig;
+      return {
+        ...prev,
+        quickReceiptConfig: {
+          ...cfg,
+          importantGuidelines: (cfg.importantGuidelines || []).filter((_, i) => i !== idx)
+        }
+      };
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     storage.updateSettings(settings);
@@ -316,6 +521,10 @@ export default function AdminSettings() {
         <button type="button" onClick={() => setActiveTab('higherEd')} className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all ${activeTab === 'higherEd' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'}`}>
           <Library className="w-4 h-4" />
           سامانه‌های آموزش عالی
+        </button>
+        <button type="button" onClick={() => setActiveTab('quickReceipt')} className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all ${activeTab === 'quickReceipt' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'}`}>
+          <Receipt className="w-4 h-4" />
+          سامانه فیش واریزی و حساب‌ها
         </button>
       </div>
 
@@ -1300,6 +1509,93 @@ export default function AdminSettings() {
           </div>
         </div>
 
+        {/* Special Header Actions Control Card */}
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-8 space-y-6">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+              <Receipt className="w-5 h-5 text-blue-600" />
+              دکمه‌های سیستمی و ویژه هدر سایت
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              مدیریت نمایش دکمه ارسال فیش واریزی و دکمه پنل دانشجویی در نوار بالای سایت
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Quick Receipt Button Control */}
+            <div className="p-6 bg-emerald-50/60 border border-emerald-200/80 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+                    <Receipt className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-slate-800 text-sm">دکمه «ارسال فیش واریزی»</h3>
+                    <p className="text-[11px] text-emerald-700 font-medium">هدایت مستقیم به فرم ارسال و پیگیری فیش</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="sr-only peer"
+                    checked={settings.enableQuickReceiptButton !== false} 
+                    onChange={(e) => setSettings(prev => ({ ...prev, enableQuickReceiptButton: e.target.checked }))}
+                  />
+                  <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">عنوان نمایشی دکمه در هدر:</label>
+                <input 
+                  type="text"
+                  value={settings.quickReceiptButtonLabel || 'ارسال فیش واریزی'}
+                  onChange={(e) => setSettings(prev => ({ ...prev, quickReceiptButtonLabel: e.target.value }))}
+                  placeholder="ارسال فیش واریزی"
+                  className="w-full bg-white border border-emerald-200 rounded-xl px-3.5 py-2.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                این دکمه در بالای سایت نمایش داده شده و به دانشجویان امکان می‌دهد بدون نیاز به ورود، رسید پرداختی خود را ارسال و پیگیری نمایند.
+              </p>
+            </div>
+
+            {/* Student Portal Button Control */}
+            <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-slate-700 text-white flex items-center justify-center shadow-sm">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-slate-800 text-sm">دکمه «پنل دانشجویی»</h3>
+                    <p className="text-[11px] text-slate-500 font-medium">ورود به پرتال جامع دانشجویان</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="sr-only peer"
+                    checked={settings.enableStudentPortalButton === true} 
+                    onChange={(e) => setSettings(prev => ({ ...prev, enableStudentPortalButton: e.target.checked }))}
+                  />
+                  <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+
+              <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 text-xs text-amber-800 space-y-1">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>وضعیت فعلی: {settings.enableStudentPortalButton ? 'فعال و نمایان' : 'غیرفعال (مخفی در هدر)'}</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-amber-700">
+                  طبق درخواست شما، این دکمه هم‌اکنون غیرفعال است تا دکمه ارسال فیش جایگزین شود. هر زمان تمایل داشتید می‌توانید آن را مجدداً فعال کنید.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -1445,6 +1741,523 @@ export default function AdminSettings() {
         </div>
 
           </>
+        )}
+
+        {/* Quick Receipt Customization Tab */}
+        {activeTab === 'quickReceipt' && (
+          <div className="space-y-8 animate-in fade-in duration-200">
+            {/* Header & Master Toggle */}
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <Receipt className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black text-slate-800">سامانه ارسال مستقیم فیش واریزی</h2>
+                    <p className="text-xs text-slate-400 mt-0.5">تنظیمات متون، شماره‌حساب‌ها، سرفصل‌ها و اعلان‌های صفحه ارسال و پیگیری فیش</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 self-end sm:self-auto bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
+                  <span className="text-xs font-bold text-slate-700">وضعیت کلی سامانه:</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer"
+                      checked={currentQuickConfig.enabled !== false} 
+                      onChange={(e) => updateQuickConfig('enabled', e.target.checked)}
+                    />
+                    <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                  </label>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-lg ${currentQuickConfig.enabled !== false ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                    {currentQuickConfig.enabled !== false ? 'فعال و در دسترس' : 'غیرفعال'}
+                  </span>
+                </div>
+              </div>
+
+              {/* General Page Headings */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">عنوان بالای صفحه ارسال فیش</label>
+                  <input 
+                    type="text" 
+                    value={currentQuickConfig.pageTitle || ''} 
+                    onChange={(e) => updateQuickConfig('pageTitle', e.target.value)}
+                    placeholder="سامانه ارسال مستقیم فیش واریزی"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">توضیحات زیر عنوان</label>
+                  <input 
+                    type="text" 
+                    value={currentQuickConfig.pageSubtitle || ''} 
+                    onChange={(e) => updateQuickConfig('pageSubtitle', e.target.value)}
+                    placeholder="ثبت و ارسال سریع فیش‌های واریزی بدون نیاز به ورود به پرتال"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">مدت زمان تقریبی بررسی امور مالی</label>
+                  <input 
+                    type="text" 
+                    value={currentQuickConfig.receiptReviewDays || ''} 
+                    onChange={(e) => updateQuickConfig('receiptReviewDays', e.target.value)}
+                    placeholder="۲۴ الی ۴۸ ساعت کاری"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">تلفن پشتیبانی امور مالی و شهریه</label>
+                  <input 
+                    type="text" 
+                    value={currentQuickConfig.supportPhone || ''} 
+                    onChange={(e) => updateQuickConfig('supportPhone', e.target.value)}
+                    placeholder="۰۷۷۳۵۳۲۲۰۰۰"
+                    dir="ltr"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-left"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Official Bank Accounts & Cards */}
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                  <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-emerald-600" />
+                    حساب‌ها و کارت‌های بانکی رسمی دانشگاه
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">اطلاعات حساب‌های معتبر مرکز جهت نمایش به واریزکنندگان</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addBankAccount}
+                  className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors self-start sm:self-auto shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  افزودن حساب بانکی جدید
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {(currentQuickConfig.bankAccounts || []).map((account, idx) => (
+                  <div key={account.id || idx} className="p-6 bg-slate-50 border border-slate-200 rounded-2xl space-y-4 relative group">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black">
+                          {toPersianDigits(idx + 1)}
+                        </span>
+                        <span className="font-bold text-slate-800 text-sm">{account.bankName || 'حساب بانکی'}</span>
+                        {account.isDefault && (
+                          <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            حساب پیش‌فرض
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {!account.isDefault && (
+                          <button
+                            type="button"
+                            onClick={() => setDefaultBankAccount(account.id)}
+                            className="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            تنظیم به عنوان پیش‌فرض
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeBankAccount(account.id)}
+                          className="text-rose-500 hover:text-rose-700 p-1 rounded-lg hover:bg-rose-50 transition-colors"
+                          title="حذف حساب"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <label className="block text-slate-600 font-bold mb-1">نام بانک:</label>
+                        <input 
+                          type="text"
+                          value={account.bankName}
+                          onChange={(e) => handleBankAccountChange(account.id, 'bankName', e.target.value)}
+                          placeholder="بانک ملی ایران"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-600 font-bold mb-1">نام صاحب حساب:</label>
+                        <input 
+                          type="text"
+                          value={account.accountOwner}
+                          onChange={(e) => handleBankAccountChange(account.id, 'accountOwner', e.target.value)}
+                          placeholder="دانشگاه علمی کاربردی کوثر کاکی"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-600 font-bold mb-1">شماره کارت (۱۶ رقم):</label>
+                        <input 
+                          type="text"
+                          value={account.cardNumber}
+                          onChange={(e) => handleBankAccountChange(account.id, 'cardNumber', e.target.value)}
+                          placeholder="6037-9918-XXXX-XXXX"
+                          dir="ltr"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-left font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-600 font-bold mb-1">شماره حساب:</label>
+                        <input 
+                          type="text"
+                          value={account.accountNumber}
+                          onChange={(e) => handleBankAccountChange(account.id, 'accountNumber', e.target.value)}
+                          placeholder="0123456789001"
+                          dir="ltr"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-left"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-slate-600 font-bold mb-1">شماره شبا (IBAN):</label>
+                        <input 
+                          type="text"
+                          value={account.shebaNumber}
+                          onChange={(e) => handleBankAccountChange(account.id, 'shebaNumber', e.target.value)}
+                          placeholder="IR000000000000000000000000"
+                          dir="ltr"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-left font-bold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Notice & Guidelines */}
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+              <div className="pb-4 border-b border-slate-100">
+                <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-amber-500" />
+                  اعلان مهم و ضوابط پرداخت
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">متن هشدارها و لیست نکاتی که به دانشجو قبل از ارسال فیش یادآوری می‌شود</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">عنوان کادر اطلاعیه</label>
+                  <input 
+                    type="text" 
+                    value={currentQuickConfig.noticeTitle || ''} 
+                    onChange={(e) => updateQuickConfig('noticeTitle', e.target.value)}
+                    placeholder="اطلاعیه واریز شهریه و ثبت فیش"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">متن توضیحی کادر اطلاعیه</label>
+                  <textarea 
+                    rows={3}
+                    value={currentQuickConfig.noticeText || ''} 
+                    onChange={(e) => updateQuickConfig('noticeText', e.target.value)}
+                    placeholder="دانشجویان گرامی، لطفاً فیش واریزی خود را خوانا و با ذکر مشخصات کامل بارگذاری فرمایید."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  ></textarea>
+                </div>
+              </div>
+
+              {/* Guidelines Bullet points */}
+              <div className="pt-4 border-t border-slate-100 space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700">فهرست نکات ضروری (Bullet Points):</label>
+                  <button
+                    type="button"
+                    onClick={addGuideline}
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    افزودن نکته جدید
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {(currentQuickConfig.importantGuidelines || []).map((point, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-[11px] font-bold shrink-0">
+                        {toPersianDigits(idx + 1)}
+                      </span>
+                      <input 
+                        type="text"
+                        value={point}
+                        onChange={(e) => updateGuideline(idx, e.target.value)}
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeGuideline(idx)}
+                        className="text-rose-500 hover:text-rose-700 p-2 rounded-lg hover:bg-rose-50"
+                        title="حذف این نکته"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Categories Manager */}
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                  <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-blue-600" />
+                    سرفصل‌ها و بابت‌های واریز وجه
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">تعریف انواع عناوین واریزی (مانند شهریه متغیر، شهریه ثابت، خوابگاه، گواهی و...)</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addCategory}
+                  className="bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors self-start sm:self-auto shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  افزودن سرفصل جدید
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {(currentQuickConfig.categories || []).map((cat) => (
+                  <div key={cat.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2">
+                    <input 
+                      type="text"
+                      value={cat.title}
+                      onChange={(e) => handleCategoryChange(cat.id, 'title', e.target.value)}
+                      className="flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0" title={cat.isActive ? 'فعال' : 'غیرفعال'}>
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer"
+                        checked={cat.isActive !== false} 
+                        onChange={(e) => handleCategoryChange(cat.id, 'isActive', e.target.checked)}
+                      />
+                      <div className="w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:right-[1px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => removeCategory(cat.id)}
+                      className="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 shrink-0"
+                      title="حذف سرفصل"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Field & Box Visibility & Requirement Controls */}
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+              <div className="pb-4 border-b border-slate-100">
+                <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                  <SlidersHorizontal className="w-5 h-5 text-indigo-600" />
+                  مدیریت فعال/غیرفعال کردن باکس‌ها و فیلدهای فرم
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  می‌توانید هر یک از کادرها، بخش‌ها و فیلدهای متنی فرم را به تفکیک فعال، غیرفعال یا اجباری نمایید.
+                </p>
+              </div>
+
+              {/* Box Visibility Toggles */}
+              <div>
+                <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-3">۱. کادرها و بخش‌های اصلی صفحه</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 block">کادر اطلاعیه و راهنما</span>
+                      <span className="text-[11px] text-slate-400">باکس زرد رنگ نکات ضروری</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer"
+                        checked={currentQuickConfig.showNoticeBox !== false} 
+                        onChange={(e) => updateQuickConfig('showNoticeBox', e.target.checked)}
+                      />
+                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:right-[1px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 block">کادر شماره‌حساب‌ها</span>
+                      <span className="text-[11px] text-slate-400">نمایش کارت و شبای رسمی</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer"
+                        checked={currentQuickConfig.showBankAccountsBox !== false} 
+                        onChange={(e) => updateQuickConfig('showBankAccountsBox', e.target.checked)}
+                      />
+                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:right-[1px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 block">تب پیگیری وضعیت فیش</span>
+                      <span className="text-[11px] text-slate-400">امکان استعلام توسط دانشجو</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer"
+                        checked={currentQuickConfig.showTrackingTab !== false} 
+                        onChange={(e) => updateQuickConfig('showTrackingTab', e.target.checked)}
+                      />
+                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:right-[1px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 block">کادر تماس پشتیبانی مالی</span>
+                      <span className="text-[11px] text-slate-400">نمایش تلفن و ساعات اداری</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer"
+                        checked={currentQuickConfig.showSupportContactBox !== false} 
+                        onChange={(e) => updateQuickConfig('showSupportContactBox', e.target.checked)}
+                      />
+                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:right-[1px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Input Fields Configuration */}
+              <div className="pt-4 border-t border-slate-100">
+                <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-3">۲. فیلدهای متنی و ورودی فرم ثبت فیش</h4>
+                <div className="space-y-3">
+                  {[
+                    { id: 'FullName', label: 'نام و نام خانوادگی دانشجو', showKey: 'showFullNameField', reqKey: 'requireFullName', desc: 'شناسایی واریزکننده' },
+                    { id: 'NationalCode', label: 'کد ملی دانشجو (۱۰ رقم)', showKey: 'showNationalCodeField', reqKey: 'requireNationalCode', desc: 'احراز هویت و استعلام پرتال' },
+                    { id: 'Mobile', label: 'شماره تلفن همراه', showKey: 'showMobileField', reqKey: 'requireStudentMobile', desc: 'ارسال پیامک و پیگیری' },
+                    { id: 'Category', label: 'بابت واریز (سرفصل مالی)', showKey: 'showCategoryField', reqKey: 'requireCategory', desc: 'شهریه، خدمات دانشجویی و...' },
+                    { id: 'Amount', label: 'مبلغ واریزی (تومان/ریال)', showKey: 'showAmountField', reqKey: 'requireAmount', desc: 'با تبدیل خودکار به حروف' },
+                    { id: 'DepositDate', label: 'تاریخ واریز وجه', showKey: 'showDepositDateField', reqKey: 'requireDepositDate', desc: 'تقویم خورشیدی' },
+                    { id: 'BankRefNumber', label: 'شماره ارجاع / پیگیری بانکی', showKey: 'showBankRefNumberField', reqKey: 'requireBankRefNumber', desc: 'شماره تراکنش فیش' },
+                    { id: 'StudentNote', label: 'یادداشت و توضیحات دانشجو', showKey: 'showStudentNoteField', reqKey: 'requireStudentNote', desc: 'باکس متن آزاد' },
+                    { id: 'ReceiptUpload', label: 'بارگذاری تصویر فیش یا PDF', showKey: 'showReceiptUploadField', reqKey: 'requireReceiptUpload', desc: 'مدرک پرداخت بانکی' },
+                  ].map((field) => (
+                    <div key={field.id} className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold text-slate-800">{field.label}</span>
+                        <span className="text-[11px] text-slate-400 mr-2">({field.desc})</span>
+                      </div>
+                      <div className="flex items-center gap-4 self-end sm:self-auto">
+                        <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-600">
+                          <input 
+                            type="checkbox" 
+                            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            checked={(currentQuickConfig as any)[field.showKey] !== false} 
+                            onChange={(e) => updateQuickConfig(field.showKey as any, e.target.checked)}
+                          />
+                          <span>نمایش در فرم</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-600">
+                          <input 
+                            type="checkbox" 
+                            className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                            checked={Boolean((currentQuickConfig as any)[field.reqKey])} 
+                            onChange={(e) => updateQuickConfig(field.reqKey as any, e.target.checked)}
+                          />
+                          <span className="text-amber-700">فیلد اجباری</span>
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Upload Size & Auto Lookup */}
+              <div className="pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">حداکثر حجم فایل فیش (مگابایت)</span>
+                    <span className="text-[11px] text-slate-400">پیش‌فرض: ۱۰ مگابایت</span>
+                  </div>
+                  <input 
+                    type="number" 
+                    min={1} 
+                    max={50}
+                    value={currentQuickConfig.maxFileSizeMB || 10} 
+                    onChange={(e) => updateQuickConfig('maxFileSizeMB', parseInt(e.target.value, 10) || 10)}
+                    className="w-20 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-center font-bold text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">استعلام هوشمند نام با کدملی</span>
+                    <span className="text-[11px] text-slate-400">تکمیل خودکار اطلاعات با دیتابیس پرتال</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer"
+                      checked={currentQuickConfig.allowStudentAutoLookup !== false} 
+                      onChange={(e) => updateQuickConfig('allowStudentAutoLookup', e.target.checked)}
+                    />
+                    <div className="w-10 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:right-[1px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Validation & Success Message Settings */}
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+              <div className="pb-4 border-b border-slate-100">
+                <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-indigo-600" />
+                  پیام موفقیت‌آمیز و اعلان پایان ثبت فیش
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">متن تبریک و راهنمای ارائه شده به دانشجو پس از صدور کد پیگیری</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">عنوان پیام موفقیت ثبت فیش</label>
+                  <input 
+                    type="text" 
+                    value={currentQuickConfig.successTitle || ''} 
+                    onChange={(e) => updateQuickConfig('successTitle', e.target.value)}
+                    placeholder="فیش واریزی با موفقیت ثبت شد"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2">متن راهنمای پس از ثبت موفق</label>
+                  <input 
+                    type="text" 
+                    value={currentQuickConfig.successMessage || ''} 
+                    onChange={(e) => updateQuickConfig('successMessage', e.target.value)}
+                    placeholder="کد رهگیری فوق را یادداشت فرمایید. وضعیت بررسی امور مالی از همین صفحه قابل استعلام است."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </form>
       {/* UNIVERSAL IMAGE CROPPER MODAL */}

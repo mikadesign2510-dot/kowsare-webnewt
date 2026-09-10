@@ -43,6 +43,7 @@ const FormsPage = lazyRetry(() => import('./pages/Forms'));
 const Gallery = lazyRetry(() => import('./pages/Gallery'));
 const Presentation = lazyRetry(() => import('./pages/Presentation'));
 const Contact = lazyRetry(() => import('./pages/Contact'));
+const QuickReceiptSubmission = lazyRetry(() => import('./pages/QuickReceiptSubmission'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -165,6 +166,8 @@ export default function App() {
               <Suspense fallback={<div className="flex min-h-[50vh] items-center justify-center"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
                 <Routes>
                   <Route path="/" element={<Home />} />
+                <Route path="/submit-receipt" element={<QuickReceiptSubmission />} />
+                <Route path="/quick-receipt" element={<QuickReceiptSubmission />} />
                 <Route path="/register" element={<PreRegistration />} />
                 <Route path="/presentation" element={<Presentation />} />
                 <Route path="/forms" element={<FormsPage />} />
