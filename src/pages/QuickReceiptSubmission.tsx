@@ -40,6 +40,73 @@ import {
 import { getTodayJalali } from '../lib/jalaliDateHelper';
 import PersianDatePicker from '../components/PersianDatePicker';
 
+// تقسیم شماره کارت ۱۶ رقمی به ۴ بلوک ۴ رقمی
+function getCardBlocks(num?: string): string[] {
+  if (!num) return ['', '', '', ''];
+  const digits = String(num).replace(/\D/g, '');
+  if (digits.length >= 16) {
+    return [
+      digits.slice(0, 4),
+      digits.slice(4, 8),
+      digits.slice(8, 12),
+      digits.slice(12, 16)
+    ];
+  }
+  const chunks: string[] = [];
+  for (let i = 0; i < digits.length; i += 4) {
+    chunks.push(digits.slice(i, i + 4));
+  }
+  while (chunks.length < 4) chunks.push('');
+  return chunks;
+}
+
+// کلاس‌های تم رنگی کارت بانکی (سرمه‌ای، زمردی، طلایی، بنفش، زغالی)
+function getCardThemeClasses(theme?: string): {
+  bg: string;
+  accent: string;
+  badge: string;
+  border: string;
+} {
+  switch (theme) {
+    case 'emerald':
+      return {
+        bg: 'bg-gradient-to-br from-[#06241e] via-[#093e34] to-[#0f5c4d]',
+        accent: 'text-emerald-300',
+        badge: 'bg-emerald-400/20 text-emerald-200 border-emerald-400/30',
+        border: 'border-emerald-500/30 shadow-emerald-950/40'
+      };
+    case 'gold':
+      return {
+        bg: 'bg-gradient-to-br from-[#241a06] via-[#43310d] to-[#6d5018]',
+        accent: 'text-amber-300',
+        badge: 'bg-amber-400/20 text-amber-200 border-amber-400/30',
+        border: 'border-amber-500/30 shadow-amber-950/40'
+      };
+    case 'purple':
+      return {
+        bg: 'bg-gradient-to-br from-[#1b0a33] via-[#33155d] to-[#512391]',
+        accent: 'text-purple-300',
+        badge: 'bg-purple-400/20 text-purple-200 border-purple-400/30',
+        border: 'border-purple-500/30 shadow-purple-950/40'
+      };
+    case 'slate':
+      return {
+        bg: 'bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155]',
+        accent: 'text-slate-300',
+        badge: 'bg-slate-400/20 text-slate-200 border-slate-400/30',
+        border: 'border-slate-500/30 shadow-slate-950/40'
+      };
+    case 'navy':
+    default:
+      return {
+        bg: 'bg-gradient-to-br from-[#0a1832] via-[#0f2854] to-[#1c4386]',
+        accent: 'text-blue-300',
+        badge: 'bg-blue-400/20 text-blue-200 border-blue-400/30',
+        border: 'border-blue-500/30 shadow-blue-950/40'
+      };
+  }
+}
+
 // فرمت‌بندی شماره کارت ۱۶ رقمی به ۴ بلوک ۴ رقمی
 function formatCardDisplay(num?: string): string {
   if (!num) return '';
@@ -101,7 +168,7 @@ export default function QuickReceiptSubmission() {
     successMessage: 'کد پیگیری اختصاصی برای رسید شما صادر گردید. کارشناسان امور مالی پس از بررسی بانکی، مبلغ را در پرونده شما منظور خواهند کرد.'
   };
 
-  const bankAccounts: QuickReceiptBankAccount[] = config.bankAccounts || config.accounts || [];
+  const bankAccounts: QuickReceiptBankAccount[] = (config.bankAccounts || config.accounts || []).filter(acc => acc.isActive !== false);
   const guidelines: string[] = config.importantGuidelines || config.guidelines || [];
   const maxFileMB = config.maxFileSizeMB || 10;
 
@@ -491,7 +558,7 @@ export default function QuickReceiptSubmission() {
                     کد پیگیری اختصاصی شما
                   </span>
                   <div className="flex items-center justify-center gap-3">
-                    <span className="font-mono text-2xl sm:text-3xl font-black text-blue-700 tracking-wider select-all dir-ltr">
+                    <span className="font-persian text-2xl sm:text-3xl font-black text-blue-700 tracking-wider select-all" dir="ltr">
                       {submittedReceipt.trackingCode}
                     </span>
                     <button
@@ -585,70 +652,122 @@ export default function QuickReceiptSubmission() {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       {bankAccounts.map((acc, index) => {
                         const rawCard = String(acc.cardNumber || '').replace(/\D/g, '');
                         const rawSheba = formatShebaDisplay(acc.shebaNumber);
                         const rawAcc = toEnglishDigits(acc.accountNumber || '').replace(/\D/g, '');
+                        const cardBlocks = getCardBlocks(acc.cardNumber);
+                        const theme = getCardThemeClasses(acc.cardTheme || 'navy');
 
                         return (
                           <div 
                             key={acc.id || index}
-                            className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 text-white p-6 rounded-3xl shadow-xl shadow-slate-900/10 border border-slate-800 flex flex-col justify-between min-h-[220px]"
+                            className={`group relative overflow-hidden rounded-[26px] p-6 sm:p-7 text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col justify-between min-h-[250px] border ${theme.bg} ${theme.border}`}
                           >
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+                            {/* Watermark and glossy reflection */}
+                            <div className="absolute -right-16 -top-16 w-52 h-52 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-500" />
+                            <div className="absolute -left-16 -bottom-16 w-52 h-52 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(255,255,255,0.12),transparent_60%)] pointer-events-none" />
 
-                            {/* Card Header */}
+                            {/* Card Header: Bank Logo + EMV Chip & NFC */}
                             <div className="flex items-center justify-between relative z-10">
-                              <div className="flex items-center gap-2">
-                                <Building2 className="w-5 h-5 text-amber-400" />
-                                <span className="font-extrabold text-base text-amber-100">{acc.bankName}</span>
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-inner">
+                                  <Building2 className={`w-5 h-5 ${theme.accent}`} />
+                                </div>
+                                <div>
+                                  <span className="font-black text-base sm:text-lg text-white block tracking-tight">
+                                    {acc.bankName}
+                                  </span>
+                                  <span className="text-[11px] font-bold text-white/70 block">
+                                    حساب رسمی واریز مرکز
+                                  </span>
+                                </div>
                               </div>
-                              <div className="w-10 h-7 rounded-md bg-gradient-to-tr from-amber-400 to-amber-200 shadow-inner flex items-center justify-center opacity-90">
-                                <div className="w-8 h-5 border border-amber-800/40 rounded-sm grid grid-cols-2 gap-0.5 opacity-50" />
+
+                              {/* Realistic EMV Metallic Smart Chip & Contactless Waves */}
+                              <div className="flex items-center gap-3">
+                                <svg className="w-5 h-5 text-white/70 -rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                                  <path d="M8.5 16.5a5 5 0 0 1 0-9" />
+                                  <path d="M12 19a8.5 8.5 0 0 1 0-14" />
+                                  <path d="M15.5 21.5a12 12 0 0 1 0-19" />
+                                </svg>
+                                
+                                <div className="relative w-11 h-8 rounded-lg bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-200 p-0.5 shadow-md border border-amber-600/50 overflow-hidden flex items-center justify-center shrink-0">
+                                  <div className="w-full h-full rounded-[5px] border border-amber-800/40 relative grid grid-cols-3 grid-rows-2">
+                                    <div className="border-r border-b border-amber-800/40" />
+                                    <div className="border-b border-amber-800/40" />
+                                    <div className="border-l border-b border-amber-800/40" />
+                                    <div className="border-r border-amber-800/40" />
+                                    <div className="" />
+                                    <div className="border-l border-amber-800/40" />
+                                    <div className="absolute inset-x-1.5 inset-y-1 rounded-xs border border-amber-900/40 bg-amber-400/30" />
+                                  </div>
+                                </div>
                               </div>
                             </div>
 
-                            {/* 16-Digit Card Number with clean copy */}
+                            {/* 16-Digit Card Number with Persian Digits & Copy */}
                             {acc.cardNumber && (
                               <div className="my-4 relative z-10">
-                                <div className="text-[11px] text-slate-400 font-medium mb-1">شماره کارت بانکی:</div>
-                                <div className="flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors p-2.5 rounded-xl border border-white/10">
-                                  <span className="font-mono text-lg sm:text-xl font-bold tracking-wider text-white dir-ltr select-all">
-                                    {toPersianDigits(formatCardDisplay(acc.cardNumber))}
+                                <div className="flex items-center justify-between mb-1.5 px-0.5">
+                                  <span className="text-[11px] font-bold text-white/80">شماره ۱۶ رقمی کارت:</span>
+                                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${theme.badge}`}>
+                                    عضو شتاب
                                   </span>
+                                </div>
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-black/30 hover:bg-black/40 transition-colors p-3 rounded-2xl border border-white/15 backdrop-blur-md">
+                                  <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 font-black text-lg sm:text-xl tracking-widest text-white select-all font-persian" dir="ltr">
+                                    {cardBlocks.map((b, i) => (
+                                      <span key={i} className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                                        {toPersianDigits(b)}
+                                      </span>
+                                    ))}
+                                  </div>
                                   <button
                                     type="button"
                                     onClick={() => handleCopy(rawCard, `card-${acc.id || index}`)}
-                                    className="text-xs font-bold bg-white/10 hover:bg-blue-600 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1 text-slate-200 hover:text-white shrink-0"
+                                    className="self-end sm:self-auto text-xs font-black bg-white/20 hover:bg-amber-400 hover:text-slate-950 px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 text-white border border-white/25 shadow-sm active:scale-95 cursor-pointer"
                                     title="کپی شماره کارت ۱۶ رقمی"
                                   >
-                                    {copiedKey === `card-${acc.id || index}` ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                                    <span>{copiedKey === `card-${acc.id || index}` ? 'کپی شد' : 'کپی'}</span>
+                                    {copiedKey === `card-${acc.id || index}` ? (
+                                      <>
+                                        <Check className="w-3.5 h-3.5 text-emerald-300" />
+                                        <span className="text-emerald-300 font-black">کپی شد!</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="w-3.5 h-3.5" />
+                                        <span>کپی شماره کارت</span>
+                                      </>
+                                    )}
                                   </button>
                                 </div>
                               </div>
                             )}
 
-                            {/* Card Footer: Owner, Sheba, Account */}
-                            <div className="space-y-2 pt-2 border-t border-white/10 relative z-10 text-xs">
-                              <div className="flex items-center justify-between text-slate-300">
-                                <span className="text-slate-400">صاحب حساب:</span>
-                                <span className="font-bold text-white text-right">{acc.accountOwner}</span>
+                            {/* Card Footer: Account Owner, Sheba, Account Number */}
+                            <div className="pt-3 border-t border-white/15 relative z-10 space-y-2 text-xs">
+                              <div className="flex items-center justify-between text-white/95">
+                                <span className="text-white/65 font-bold">صاحب حساب:</span>
+                                <span className="font-black text-white text-right flex items-center gap-1.5">
+                                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                  <span>{acc.accountOwner}</span>
+                                </span>
                               </div>
 
                               {acc.shebaNumber && (
-                                <div className="flex items-center justify-between text-slate-300 pt-1">
-                                  <span className="text-slate-400">شماره شبا:</span>
+                                <div className="flex items-center justify-between text-white/95 pt-0.5">
+                                  <span className="text-white/65 font-bold">شماره شبا (IBAN):</span>
                                   <div className="flex items-center gap-2">
-                                    <span className="font-mono font-medium dir-ltr text-amber-200 tracking-wider">
+                                    <span className="font-extrabold dir-ltr text-amber-300 tracking-wider font-persian text-xs">
                                       {toPersianDigits(rawSheba)}
                                     </span>
                                     <button
                                       type="button"
                                       onClick={() => handleCopy(rawSheba, `sheba-${acc.id || index}`)}
-                                      className="p-1 hover:text-amber-300 transition-colors"
+                                      className="p-1 hover:text-amber-300 rounded-lg hover:bg-white/15 transition-colors cursor-pointer"
                                       title="کپی شماره شبا"
                                     >
                                       {copiedKey === `sheba-${acc.id || index}` ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -658,16 +777,16 @@ export default function QuickReceiptSubmission() {
                               )}
 
                               {acc.accountNumber && (
-                                <div className="flex items-center justify-between text-slate-300">
-                                  <span className="text-slate-400">شماره حساب:</span>
+                                <div className="flex items-center justify-between text-white/95">
+                                  <span className="text-white/65 font-bold">شماره حساب:</span>
                                   <div className="flex items-center gap-2">
-                                    <span className="font-mono font-medium dir-ltr">
+                                    <span className="font-bold dir-ltr font-persian text-xs">
                                       {toPersianDigits(acc.accountNumber)}
                                     </span>
                                     <button
                                       type="button"
                                       onClick={() => handleCopy(rawAcc, `acc-${acc.id || index}`)}
-                                      className="p-1 hover:text-blue-300 transition-colors"
+                                      className="p-1 hover:text-blue-300 rounded-lg hover:bg-white/15 transition-colors cursor-pointer"
                                       title="کپی شماره حساب"
                                     >
                                       {copiedKey === `acc-${acc.id || index}` ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -753,11 +872,12 @@ export default function QuickReceiptSubmission() {
                           <div className="relative">
                             <input
                               type="text"
-                              value={nationalCode}
+                              value={nationalCode ? toPersianDigits(nationalCode) : ''}
                               onChange={(e) => handleNationalCodeChange(e.target.value)}
                               placeholder="۱۰ رقم کد ملی"
                               maxLength={10}
-                              className={`w-full px-4 py-3 rounded-xl border bg-slate-50 text-slate-800 font-medium text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 dir-ltr text-right ${
+                              dir="rtl"
+                              className={`w-full px-4 py-3 rounded-xl border bg-slate-50 text-slate-800 font-bold text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 text-right font-persian ${
                                 formErrors.nationalCode 
                                   ? 'border-rose-300 focus:ring-rose-500/20' 
                                   : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'
@@ -794,7 +914,8 @@ export default function QuickReceiptSubmission() {
                               if (formErrors.fullName) setFormErrors(prev => ({ ...prev, fullName: '' }));
                             }}
                             placeholder="مثلاً: علیرضا محمدی"
-                            className={`w-full px-4 py-3 rounded-xl border bg-slate-50 text-slate-800 font-medium text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 ${
+                            dir="rtl"
+                            className={`w-full px-4 py-3 rounded-xl border bg-slate-50 text-slate-800 font-bold text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 font-persian ${
                               formErrors.fullName 
                                 ? 'border-rose-300 focus:ring-rose-500/20' 
                                 : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'
@@ -818,7 +939,7 @@ export default function QuickReceiptSubmission() {
                           <div className="relative">
                             <input
                               type="text"
-                              value={mobile}
+                              value={mobile ? toPersianDigits(mobile) : ''}
                               onChange={(e) => {
                                 const clean = replacePersianWithEnglishDigits(e.target.value).replace(/\D/g, '').slice(0, 11);
                                 setMobile(clean);
@@ -826,7 +947,8 @@ export default function QuickReceiptSubmission() {
                               }}
                               placeholder="مثال: ۰۹۱۷۱۲۳۴۵۶۷"
                               maxLength={11}
-                              className={`w-full px-4 py-3 rounded-xl border bg-slate-50 text-slate-800 font-medium text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 dir-ltr text-right ${
+                              dir="rtl"
+                              className={`w-full px-4 py-3 rounded-xl border bg-slate-50 text-slate-800 font-bold text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 text-right font-persian ${
                                 formErrors.mobile 
                                   ? 'border-rose-300 focus:ring-rose-500/20' 
                                   : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'
@@ -857,7 +979,8 @@ export default function QuickReceiptSubmission() {
                             <select
                               value={category}
                               onChange={(e) => setCategory(e.target.value)}
-                              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none"
+                              dir="rtl"
+                              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-bold text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none font-persian"
                             >
                               {config.categories?.filter(c => c.isActive !== false).map(cat => {
                                 const catName = cat.title || cat.label || '';
@@ -935,7 +1058,8 @@ export default function QuickReceiptSubmission() {
                             value={rawAmount ? formatPersianDigitSeparators(rawAmount) : ''}
                             onChange={handleAmountChange}
                             placeholder="مثلاً: ۱,۵۰۰,۰۰۰"
-                            className={`w-full px-4 py-3 rounded-xl border bg-white text-slate-900 font-extrabold text-lg transition-all focus:outline-none focus:ring-2 dir-ltr text-right ${
+                            dir="rtl"
+                            className={`w-full px-4 py-3 rounded-xl border bg-white text-slate-900 font-extrabold text-lg transition-all focus:outline-none focus:ring-2 text-right font-persian ${
                               formErrors.amount
                                 ? 'border-rose-300 focus:ring-rose-500/20'
                                 : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'
@@ -978,10 +1102,15 @@ export default function QuickReceiptSubmission() {
                           </label>
                           <input
                             type="text"
-                            value={bankRefNumber}
-                            onChange={(e) => setBankRefNumber(e.target.value)}
+                            value={bankRefNumber ? toPersianDigits(bankRefNumber) : ''}
+                            onChange={(e) => {
+                              const clean = replacePersianWithEnglishDigits(e.target.value).replace(/\D/g, '');
+                              setBankRefNumber(clean);
+                              if (formErrors.bankRefNumber) setFormErrors(prev => ({ ...prev, bankRefNumber: '' }));
+                            }}
                             placeholder="کد ارجاع درج شده روی رسید بانکی"
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dir-ltr text-right"
+                            dir="rtl"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-bold text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-right font-persian"
                           />
                           {formErrors.bankRefNumber ? (
                             <p className="text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1">
@@ -1007,7 +1136,8 @@ export default function QuickReceiptSubmission() {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="مثلاً: قسط دوم شهریه ترم جاری"
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                            dir="rtl"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-persian"
                           />
                           {formErrors.description && (
                             <p className="text-xs text-rose-500 font-bold mt-1.5 flex items-center gap-1">
@@ -1183,7 +1313,8 @@ export default function QuickReceiptSubmission() {
                     value={trackQuery}
                     onChange={(e) => setTrackQuery(e.target.value)}
                     placeholder="کد پیگیری (مثال: KOW-260910-12345) یا شماره ملی یا شماره همراه"
-                    className="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                    dir="rtl"
+                    className="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-bold text-sm transition-all focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-persian"
                   />
                   <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-4 pointer-events-none" />
                 </div>
@@ -1191,7 +1322,7 @@ export default function QuickReceiptSubmission() {
                 <button
                   type="submit"
                   disabled={trackingLoading || !trackQuery.trim()}
-                  className="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md shadow-blue-600/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 flex-shrink-0"
+                  className="px-6 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md shadow-blue-600/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 flex-shrink-0 cursor-pointer"
                 >
                   {trackingLoading ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
@@ -1233,7 +1364,7 @@ export default function QuickReceiptSubmission() {
                               </div>
                               <div className="text-xs text-slate-500 flex items-center gap-2">
                                 <span>کد پیگیری:</span>
-                                <span className="font-mono font-black text-blue-600 select-all dir-ltr inline-block tracking-wider px-2 py-0.5 bg-blue-50 rounded-lg">
+                                <span className="font-black text-blue-700 select-all inline-block tracking-wider px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-lg text-xs font-persian" dir="ltr">
                                   {receipt.trackingCode}
                                 </span>
                                 <button

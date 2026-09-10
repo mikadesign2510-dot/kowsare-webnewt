@@ -135,6 +135,8 @@ export interface QuickReceiptBankAccount {
   cardNumber: string;
   shebaNumber: string;
   isDefault?: boolean;
+  isActive?: boolean;
+  cardTheme?: 'navy' | 'emerald' | 'gold' | 'purple' | 'slate';
 }
 
 export interface QuickReceiptCategory {
@@ -235,7 +237,9 @@ export const defaultQuickReceiptConfig: QuickReceiptConfig = {
       accountNumber: '۰۱۰۷۶۵۴۳۲۱۰۰۵',
       cardNumber: '۶۰۳۷-۹۹۷۵-۱۲۳۴-۵۶۷۸',
       shebaNumber: 'IR۷۲۰۱۷۰۰۰۰۰۰۰۱۰۷۶۵۴۳۲۱۰۰۵',
-      isDefault: true
+      isDefault: true,
+      isActive: true,
+      cardTheme: 'navy'
     }
   ],
   
