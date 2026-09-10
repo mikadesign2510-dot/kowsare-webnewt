@@ -41,6 +41,7 @@ const NewsList = lazyRetry(() => import('./pages/NewsList'));
 const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
 const FormsPage = lazyRetry(() => import('./pages/Forms'));
 const Gallery = lazyRetry(() => import('./pages/Gallery'));
+const GalleryVideoDetail = lazyRetry(() => import('./pages/GalleryVideoDetail'));
 const Presentation = lazyRetry(() => import('./pages/Presentation'));
 const Contact = lazyRetry(() => import('./pages/Contact'));
 const QuickReceiptSubmission = lazyRetry(() => import('./pages/QuickReceiptSubmission'));
@@ -172,6 +173,8 @@ export default function App() {
                 <Route path="/presentation" element={<Presentation />} />
                 <Route path="/forms" element={<FormsPage />} />
                 <Route path="/gallery" element={<Gallery />} />
+                <Route path="/gallery/video/:albumId/:videoId" element={<GalleryVideoDetail />} />
+                <Route path="/gallery/video/:videoId" element={<GalleryVideoDetail />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/news" element={<NewsList />} />
                 <Route path="/news/:id" element={<NewsDetail />} />

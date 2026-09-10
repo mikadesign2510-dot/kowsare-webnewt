@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GalleryAlbum, storage } from '../lib/storage';
 import { Link } from 'react-router-dom';
-import { X, ChevronRight, ChevronLeft, Video, ArrowLeft } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Video, ArrowLeft, Share2, ExternalLink } from 'lucide-react';
+import VideoShareModal from './VideoShareModal';
 
 const slideVariants = {
   enter: (dir: number) => ({
@@ -32,6 +33,7 @@ interface AlbumLightboxProps {
 export default function AlbumLightbox({ album, onClose }: AlbumLightboxProps) {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const lastSwipeTimeRef = useRef<number>(0);
 
   useEffect(() => {
@@ -110,7 +112,29 @@ export default function AlbumLightbox({ album, onClose }: AlbumLightboxProps) {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {album.images[lightboxIndex]?.type === 'video' && (
+            <>
+              <button 
+                onClick={() => setShareModalOpen(true)}
+                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 rounded-xl flex items-center gap-1.5 text-white text-xs font-bold transition-all shadow-md shadow-rose-600/20 active:scale-95 cursor-pointer"
+                title="اشتراک‌گذاری ویدئو"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">اشتراک ویدئو</span>
+              </button>
+
+              <Link
+                to={`/gallery/video/${album.id}/${album.images[lightboxIndex].id || lightboxIndex}`}
+                onClick={onClose}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl text-slate-200 hover:text-white text-xs font-bold transition-all border border-white/10"
+                title="مشاهده در صفحه اختصاصی"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
+                <span>صفحه اختصاصی</span>
+              </Link>
+            </>
+          )}
           <button 
             onClick={onClose}
             className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 hover:bg-red-500/90 active:scale-95 rounded-full flex items-center justify-center text-white transition-colors"
@@ -211,16 +235,29 @@ export default function AlbumLightbox({ album, onClose }: AlbumLightboxProps) {
               </p>
             </div>
 
-            {album.newsId && (
-              <Link
-                to={`/news/${album.newsId}`}
-                onClick={onClose}
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-blue-500/25 shrink-0 self-start sm:self-center"
-              >
-                مشاهده متن کامل خبر
-                <ArrowLeft className="w-3.5 h-3.5" />
-              </Link>
-            )}
+            <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-center">
+              {currentMedia?.type === 'video' && (
+                <button
+                  onClick={() => setShareModalOpen(true)}
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-rose-600/25 cursor-pointer"
+                  title="اشتراک‌گذاری ویدئو"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>اشتراک ویدئو</span>
+                </button>
+              )}
+
+              {album.newsId && (
+                <Link
+                  to={`/news/${album.newsId}`}
+                  onClick={onClose}
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-blue-500/25 shrink-0"
+                >
+                  مشاهده متن کامل خبر
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Thumbnails Navigation Strip */}
@@ -255,6 +292,17 @@ export default function AlbumLightbox({ album, onClose }: AlbumLightboxProps) {
           )}
         </div>
       </div>
+
+      {/* Video Dedicated Share Modal */}
+      {currentMedia?.type === 'video' && (
+        <VideoShareModal
+          isOpen={shareModalOpen}
+          onClose={() => setShareModalOpen(false)}
+          videoTitle={currentMedia.title || album.title}
+          dedicatedPath={`/gallery/video/${album.id}/${currentMedia.id || lightboxIndex}`}
+          albumTitle={album.title}
+        />
+      )}
     </motion.div>
   );
 }

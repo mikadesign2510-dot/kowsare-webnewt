@@ -5,10 +5,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Camera, Calendar, ArrowLeft, X, ChevronRight, ChevronLeft, 
   Image as ImageIcon, Video, Sparkles, Layers, Search, 
-  CheckCircle2, Film
+  CheckCircle2, Film, Share2, ExternalLink
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import AlbumLightbox from '../components/AlbumLightbox';
+import VideoShareModal from '../components/VideoShareModal';
 import Footer from '../components/Footer';
 
 const slideVariants = {
@@ -38,6 +39,7 @@ export default function Gallery() {
   const [selectedAlbum, setSelectedAlbum] = useState<GalleryAlbum | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number>(0);
   const [direction, setDirection] = useState<number>(1);
+  const [shareModalOpen, setShareModalOpen] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -93,14 +95,22 @@ export default function Gallery() {
     return activeAlbums.reduce((acc, a) => acc + (a.images?.length || 0), 0);
   }, [activeAlbums]);
 
+  const hasVideos = useMemo(() => {
+    return activeAlbums.some(a => a.images?.some(img => img.type === 'video'));
+  }, [activeAlbums]);
+
   const categories = useMemo(() => {
     const unique = Array.from(new Set(activeAlbums.map(a => a.category).filter(Boolean)));
-    return ['all', ...unique];
-  }, [activeAlbums]);
+    return ['all', ...(hasVideos ? ['videos'] : []), ...unique];
+  }, [activeAlbums, hasVideos]);
 
   const filteredAlbums = useMemo(() => {
     return activeAlbums.filter(a => {
-      const matchCat = activeCategory === 'all' || a.category === activeCategory;
+      const matchCat = activeCategory === 'all' 
+        ? true 
+        : activeCategory === 'videos' 
+          ? a.images?.some(img => img.type === 'video')
+          : a.category === activeCategory;
       const matchSearch = !searchQuery || 
         a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (a.description && a.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -266,7 +276,16 @@ export default function Gallery() {
                           : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
                       }`}
                     >
-                      {cat === 'all' ? 'همه تصاویر' : cat}
+                      {cat === 'all' ? (
+                        'همه تصاویر'
+                      ) : cat === 'videos' ? (
+                        <span className="flex items-center gap-1.5">
+                          <Film className="w-3.5 h-3.5 text-rose-500" />
+                          <span>ویدئوها و کلیپ‌ها</span>
+                        </span>
+                      ) : (
+                        cat
+                      )}
                     </button>
                   ))}
                 </div>
@@ -343,14 +362,26 @@ export default function Gallery() {
                       )}
                     </div>
 
-                    <div className="pt-4 mt-2 border-t border-slate-100 flex items-center justify-between">
-                      <button 
-                        onClick={() => openLightbox(album, 0)}
-                        className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                      >
-                        مشاهده تصاویر
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
+                    <div className="pt-4 mt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => openLightbox(album, 0)}
+                          className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                        >
+                          مشاهده تصاویر
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        {album.images.some(img => img.type === 'video') && (
+                          <Link
+                            to={`/gallery/video/${album.id}/${album.images.find(img => img.type === 'video')?.id || 0}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-colors"
+                            title="پخش در صفحه اختصاصی با لینک اشتراک"
+                          >
+                            <Film className="w-3 h-3" />
+                            <span>صفحه ویدئو</span>
+                          </Link>
+                        )}
+                      </div>
 
                       {album.newsId && (
                         <Link 
@@ -391,14 +422,36 @@ export default function Gallery() {
                 </h3>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                {currentMedia?.type === 'video' && (
+                  <>
+                    <button 
+                      onClick={() => setShareModalOpen(true)}
+                      className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 rounded-xl flex items-center gap-1.5 text-white text-xs font-bold transition-all shadow-md shadow-rose-600/20 active:scale-95 cursor-pointer"
+                      title="اشتراک‌گذاری ویدئو"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">اشتراک ویدئو</span>
+                    </button>
+
+                    <Link
+                      to={`/gallery/video/${selectedAlbum.id}/${currentMedia.id || lightboxIndex}`}
+                      onClick={closeLightbox}
+                      className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl text-slate-200 hover:text-white text-xs font-bold transition-all border border-white/10"
+                      title="مشاهده در صفحه اختصاصی"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
+                      <span>صفحه اختصاصی</span>
+                    </Link>
+                  </>
+                )}
                 <span className="text-xs text-slate-400 font-mono bg-white/10 px-3 py-1.5 rounded-xl">
                   {lightboxIndex + 1} / {selectedAlbum.images.length}
                 </span>
                 <button 
                   onClick={closeLightbox}
                   aria-label="بستن گالری"
-                  className="w-10 h-10 bg-white/10 hover:bg-red-500/80 rounded-xl flex items-center justify-center text-white transition-colors"
+                  className="w-10 h-10 bg-white/10 hover:bg-red-500/80 rounded-xl flex items-center justify-center text-white transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -502,16 +555,29 @@ export default function Gallery() {
                     </p>
                   </div>
 
-                  {selectedAlbum.newsId && (
-                    <Link
-                      to={`/news/${selectedAlbum.newsId}`}
-                      onClick={closeLightbox}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-blue-500/25 shrink-0 self-start sm:self-center"
-                    >
-                      مشاهده متن کامل خبر
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                    </Link>
-                  )}
+                  <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-center">
+                    {currentMedia?.type === 'video' && (
+                      <button
+                        onClick={() => setShareModalOpen(true)}
+                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-rose-600/25 cursor-pointer"
+                        title="اشتراک‌گذاری ویدئو"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                        <span>اشتراک ویدئو</span>
+                      </button>
+                    )}
+
+                    {selectedAlbum.newsId && (
+                      <Link
+                        to={`/news/${selectedAlbum.newsId}`}
+                        onClick={closeLightbox}
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-blue-500/25 shrink-0"
+                      >
+                        مشاهده متن کامل خبر
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                      </Link>
+                    )}
+                  </div>
                 </div>
 
                 {/* Thumbnails Navigation Strip */}
@@ -550,6 +616,17 @@ export default function Gallery() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Video Dedicated Share Modal */}
+      {selectedAlbum && currentMedia?.type === 'video' && (
+        <VideoShareModal
+          isOpen={shareModalOpen}
+          onClose={() => setShareModalOpen(false)}
+          videoTitle={currentMedia.title || selectedAlbum.title}
+          dedicatedPath={`/gallery/video/${selectedAlbum.id}/${currentMedia.id || lightboxIndex}`}
+          albumTitle={selectedAlbum.title}
+        />
+      )}
 
     </>
   );

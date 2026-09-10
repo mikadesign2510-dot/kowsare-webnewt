@@ -201,7 +201,14 @@ export default function QuickReceiptSubmission() {
   // ارسال فرم و بازخورد
   const [submitting, setSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [submittedReceipt, setSubmittedReceipt] = useState<FinancialReceipt | null>(null);
+  const [submittedReceipt, setSubmittedReceipt] = useState<FinancialReceipt | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('kowsar_last_submitted_receipt');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   // بازخورد کپی
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -214,6 +221,34 @@ export default function QuickReceiptSubmission() {
 
   // وضعیت باز/بسته بودن راهنما
   const [guidelinesOpen, setGuidelinesOpen] = useState(true);
+
+  // جلوگیری از اسکرول خودکار مرورگر به پایین صفحه در هنگام رفرش و هدایت همیشگی به بالای صفحه
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    const timer = setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 60);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // هنگامی که فیش با موفقیت ثبت شد، صفحه بی‌درنگ به بالای صفحه منتقل شود تا کد رهگیری و پیام موفقیت کاملاً در دید باشد
+  useEffect(() => {
+    if (submittedReceipt) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      try {
+        sessionStorage.setItem('kowsar_last_submitted_receipt', JSON.stringify(submittedReceipt));
+      } catch {
+        // ignore
+      }
+      const timer = setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [submittedReceipt]);
 
   // همگام‌سازی با تغییرات تنظیمات در زمان واقعی
   useEffect(() => {
@@ -414,6 +449,12 @@ export default function QuickReceiptSubmission() {
 
       if (result) {
         setSubmittedReceipt(result);
+        try {
+          sessionStorage.setItem('kowsar_last_submitted_receipt', JSON.stringify(result));
+        } catch {
+          // ignore
+        }
+        window.scrollTo({ top: 0, behavior: 'instant' });
       }
     } catch (err) {
       console.error('Error submitting quick receipt:', err);
@@ -425,6 +466,11 @@ export default function QuickReceiptSubmission() {
 
   // بازنشانی فرم برای ثبت فیش دیگر
   const handleResetForm = () => {
+    try {
+      sessionStorage.removeItem('kowsar_last_submitted_receipt');
+    } catch {
+      // ignore
+    }
     setSubmittedReceipt(null);
     setNationalCode('');
     setFullName('');
@@ -437,6 +483,7 @@ export default function QuickReceiptSubmission() {
     setReceiptFileName('');
     setIsPdfReceipt(false);
     setFormErrors({});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // جستجوی وضعیت فیش در سرور و لوکال
@@ -501,8 +548,11 @@ export default function QuickReceiptSubmission() {
               <div className="flex bg-black/20 p-1.5 rounded-2xl backdrop-blur-md border border-white/10 self-start md:self-auto">
                 <button
                   type="button"
-                  onClick={() => setActiveTab('submit')}
-                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
+                  onClick={() => {
+                    setActiveTab('submit');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
                     activeTab === 'submit'
                       ? 'bg-white text-blue-900 shadow-md'
                       : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -513,8 +563,11 @@ export default function QuickReceiptSubmission() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('track')}
-                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
+                  onClick={() => {
+                    setActiveTab('track');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
                     activeTab === 'track'
                       ? 'bg-white text-blue-900 shadow-md'
                       : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -642,7 +695,7 @@ export default function QuickReceiptSubmission() {
                 {/* Official Bank Accounts Box */}
                 {config.showBankAccountsBox !== false && bankAccounts.length > 0 && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className={`flex items-center justify-between w-full ${bankAccounts.length === 1 ? 'max-w-[560px] lg:max-w-[620px] mx-auto' : ''}`}>
                       <h2 className="text-base sm:text-lg font-extrabold text-slate-800 flex items-center gap-2">
                         <CreditCard className="w-5 h-5 text-blue-600" />
                         <span>حساب‌های رسمی واریز وجه مرکز</span>
@@ -652,7 +705,7 @@ export default function QuickReceiptSubmission() {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className={`w-full flex flex-wrap justify-center items-center gap-6 ${bankAccounts.length === 1 ? 'max-w-[560px] lg:max-w-[620px] mx-auto' : ''}`}>
                       {bankAccounts.map((acc, index) => {
                         const rawCard = String(acc.cardNumber || '').replace(/\D/g, '');
                         const rawSheba = formatShebaDisplay(acc.shebaNumber);
@@ -663,7 +716,7 @@ export default function QuickReceiptSubmission() {
                         return (
                           <div 
                             key={acc.id || index}
-                            className={`group relative overflow-hidden rounded-[26px] p-6 sm:p-7 text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col justify-between min-h-[250px] border ${theme.bg} ${theme.border}`}
+                            className={`group relative overflow-hidden rounded-[26px] p-6 sm:p-7 text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col justify-between min-h-[250px] border ${theme.bg} ${theme.border} w-full ${bankAccounts.length > 1 ? 'md:w-[calc(50%-12px)] md:max-w-[540px]' : 'w-full md:max-w-[560px] lg:max-w-[620px]'} mx-auto`}
                           >
                             {/* Watermark and glossy reflection */}
                             <div className="absolute -right-16 -top-16 w-52 h-52 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-500" />
