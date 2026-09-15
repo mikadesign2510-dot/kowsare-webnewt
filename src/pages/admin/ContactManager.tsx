@@ -90,20 +90,38 @@ export default function AdminContactManager() {
   } | null>(null);
 
   useEffect(() => {
+    // بارگذاری آخرین تنظیمات و دپارتمان‌ها از دیتابیس سرور
+    storage.syncContactConfigWithDB().then(serverCfg => {
+      if (serverCfg) {
+        setConfig(serverCfg);
+      }
+    });
+
     const handleMessagesChange = () => {
       setMessages(storage.getContactMessages());
     };
+    const handleConfigEvent = (e: any) => {
+      if (e.detail) {
+        setConfig(e.detail);
+      }
+    };
+
     window.addEventListener('kowsar_contact_messages_changed', handleMessagesChange);
-    return () => window.removeEventListener('kowsar_contact_messages_changed', handleMessagesChange);
+    window.addEventListener('kowsar_contact_config_changed', handleConfigEvent);
+    return () => {
+      window.removeEventListener('kowsar_contact_messages_changed', handleMessagesChange);
+      window.removeEventListener('kowsar_contact_config_changed', handleConfigEvent);
+    };
   }, []);
 
   const handleConfigChange = (field: keyof ContactPageConfig, value: any) => {
     setConfig(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSaveConfig = (e?: React.FormEvent) => {
+  const handleSaveConfig = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     storage.updateContactConfig(config);
+    await storage.saveContactConfigToDB(config);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };

@@ -135,19 +135,25 @@ export default function PreRegistration() {
                 <BookOpen className="w-4 h-4 text-blue-500" />
                 رشته تحصیلی مورد علاقه
               </label>
-              <select required name="field" value={formData.field} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all appearance-none cursor-pointer">
+              <select 
+                required 
+                name="field" 
+                value={formData.field} 
+                onChange={handleChange} 
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all appearance-none cursor-pointer"
+              >
                 <option value="" disabled>انتخاب کنید...</option>
                 {studyFields.some(f => f.degreeType === 'associate' || f.degreeType === 'both') && (
-                  <optgroup label="مقطع کاردانی">
+                  <optgroup label="مقطع کاردانی (ویژه دارندگان دیپلم)">
                     {studyFields.filter(f => f.degreeType === 'associate' || f.degreeType === 'both').map(field => (
-                      <option key={`assoc-${field.id}`} value={field.value}>{field.name}</option>
+                      <option key={`assoc-${field.id}`} value={`${field.name} (کاردانی)`}>{field.name}</option>
                     ))}
                   </optgroup>
                 )}
                 {studyFields.some(f => f.degreeType === 'bachelor' || f.degreeType === 'both') && (
-                  <optgroup label="مقطع کارشناسی">
+                  <optgroup label="مقطع کارشناسی (ویژه دارندگان کاردانی)">
                     {studyFields.filter(f => f.degreeType === 'bachelor' || f.degreeType === 'both').map(field => (
-                      <option key={`bach-${field.id}`} value={field.value}>{field.name}</option>
+                      <option key={`bach-${field.id}`} value={`${field.name} (کارشناسی)`}>{field.name}</option>
                     ))}
                   </optgroup>
                 )}

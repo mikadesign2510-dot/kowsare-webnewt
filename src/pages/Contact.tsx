@@ -63,6 +63,13 @@ export default function Contact() {
   useEffect(() => {
     window.scrollTo(0, 0);
 
+    // دریافت بی‌درنگ آخرین تنظیمات و دپارتمان‌ها از پایگاه داده سرور
+    storage.syncContactConfigWithDB().then(serverCfg => {
+      if (serverCfg) {
+        setConfig(serverCfg);
+      }
+    });
+
     const handleConfigChange = (e: any) => {
       if (e.detail) {
         setConfig(e.detail);

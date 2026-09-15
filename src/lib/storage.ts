@@ -2034,11 +2034,45 @@ export const storage = {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('kowsar_panel_config_changed', { detail: updated }));
       }
+      try {
+        fetch('/api/settings/panel', {
+          method: 'POST',
+          headers: getAdminAuthHeaders(),
+          body: JSON.stringify(updated)
+        }).catch(e => console.warn('Could not save panel config to DB:', e));
+      } catch (e) {
+        console.warn('Network error saving panel config:', e);
+      }
       return updated;
     } catch (e) {
       console.error('Failed to update admin panel config', e);
       return defaultPanelConfig;
     }
+  },
+
+  syncAdminPanelConfigWithDB: async (): Promise<AdminPanelConfig> => {
+    try {
+      const res = await fetch('/api/settings/panel');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          const remote = json.data;
+          const current = storage.getAdminPanelConfig();
+          const merged: AdminPanelConfig = {
+            ...current,
+            ...remote
+          };
+          localStorage.setItem(ADMIN_PANEL_CONFIG_KEY, JSON.stringify(merged));
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('kowsar_panel_config_changed', { detail: merged }));
+          }
+          return merged;
+        }
+      }
+    } catch (e) {
+      console.warn('syncAdminPanelConfigWithDB error:', e);
+    }
+    return storage.getAdminPanelConfig();
   },
 
   getRegistrations: (): Registration[] => {
@@ -3907,9 +3941,9 @@ export const storage = {
         googleMapsLink,
         wazeLink,
         mapIframe,
-        departments: parsed.departments?.length ? parsed.departments : defaultContactConfig.departments,
-        socialLinks: parsed.socialLinks?.length ? parsed.socialLinks : defaultContactConfig.socialLinks,
-        faqs: parsed.faqs?.length ? parsed.faqs : defaultContactConfig.faqs,
+        departments: Array.isArray(parsed.departments) ? parsed.departments : defaultContactConfig.departments,
+        socialLinks: Array.isArray(parsed.socialLinks) ? parsed.socialLinks : defaultContactConfig.socialLinks,
+        faqs: Array.isArray(parsed.faqs) ? parsed.faqs : defaultContactConfig.faqs,
       };
     } catch {
       return defaultContactConfig;
@@ -3939,7 +3973,18 @@ export const storage = {
           window.dispatchEvent(new CustomEvent('kowsar_contact_config_changed', { detail: updated }));
         }
       } catch (err) {
-        console.warn('Could not sync contact config', err);
+        console.warn('Could not sync contact config with site settings', err);
+      }
+
+      // ذخیره دائمی و خودکار در پایگاه داده سرور
+      try {
+        fetch('/api/settings/contact', {
+          method: 'POST',
+          headers: getAdminAuthHeaders(),
+          body: JSON.stringify(updated)
+        }).catch(e => console.warn('Could not save contact config to DB:', e));
+      } catch (e) {
+        console.warn('Network error saving contact config:', e);
       }
 
       return updated;
@@ -3947,6 +3992,54 @@ export const storage = {
       console.error('Failed to update contact config', e);
       return defaultContactConfig;
     }
+  },
+
+  saveContactConfigToDB: async (config: ContactPageConfig): Promise<boolean> => {
+    storage.addSecurityLog({
+      eventType: 'data_modified',
+      severity: 'low',
+      message: 'بروزرسانی دپارتمان‌ها و صفحه تماس در پایگاه داده',
+      details: 'تنظیمات دپارتمان‌ها و صفحه تماس با موفقیت در دیتابیس سرور ذخیره گردید.'
+    });
+    try {
+      const res = await fetch('/api/settings/contact', {
+        method: 'POST',
+        headers: getAdminAuthHeaders(),
+        body: JSON.stringify(config)
+      });
+      return res.ok;
+    } catch (e) {
+      console.warn('saveContactConfigToDB error:', e);
+      return false;
+    }
+  },
+
+  syncContactConfigWithDB: async (): Promise<ContactPageConfig> => {
+    try {
+      const res = await fetch('/api/settings/contact');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          const remote = json.data;
+          const current = storage.getContactConfig();
+          const merged: ContactPageConfig = {
+            ...current,
+            ...remote,
+            departments: Array.isArray(remote.departments) ? remote.departments : current.departments,
+            socialLinks: Array.isArray(remote.socialLinks) ? remote.socialLinks : current.socialLinks,
+            faqs: Array.isArray(remote.faqs) ? remote.faqs : current.faqs,
+          };
+          localStorage.setItem(CONTACT_CONFIG_KEY, JSON.stringify(merged));
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('kowsar_contact_config_changed', { detail: merged }));
+          }
+          return merged;
+        }
+      }
+    } catch (e) {
+      console.warn('syncContactConfigWithDB error:', e);
+    }
+    return storage.getContactConfig();
   },
 
   resetContactConfig: (): ContactPageConfig => {
@@ -4180,6 +4273,8 @@ export const storage = {
       await Promise.allSettled([
         storage.syncSettingsWithDB(),
         storage.syncPortalSettingsWithDB(),
+        storage.syncContactConfigWithDB(),
+        storage.syncAdminPanelConfigWithDB(),
         storage.syncNewsWithDB(),
         storage.syncRegistrationsWithDB(),
         storage.syncBannersWithDB(),

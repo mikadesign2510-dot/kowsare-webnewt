@@ -4,6 +4,37 @@ import { requireAuth } from '../middlewares/auth.js';
 
 const router = Router();
 
+// دریافت تنظیمات صفحه تماس با ما و دپارتمان‌ها
+router.get('/config', async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query('SELECT settings FROM site_settings WHERE id = 3');
+    if (result.rows.length === 0) {
+      return res.json({ success: true, data: null });
+    }
+    res.json({ success: true, data: result.rows[0].settings });
+  } catch (error) {
+    console.error('Fetch contact config error:', error);
+    res.status(500).json({ success: false, message: 'خطا در دریافت تنظیمات تماس' });
+  }
+});
+
+// ذخیره تنظیمات صفحه تماس با ما و دپارتمان‌ها
+router.post('/config', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const settings = req.body;
+    await pool.query(
+      `INSERT INTO site_settings (id, settings, updated_at) 
+       VALUES (3, $1, CURRENT_TIMESTAMP) 
+       ON CONFLICT (id) DO UPDATE SET settings = $1, updated_at = CURRENT_TIMESTAMP`,
+      [JSON.stringify(settings)]
+    );
+    res.json({ success: true, message: 'تنظیمات تماس با ما با موفقیت ذخیره شد' });
+  } catch (error) {
+    console.error('Save contact config error:', error);
+    res.status(500).json({ success: false, message: 'خطا در ذخیره تنظیمات تماس' });
+  }
+});
+
 router.get('/', requireAuth, async (req: Request, res: Response) => {
   try {
     const result = await pool.query('SELECT * FROM contact_messages ORDER BY created_at DESC');

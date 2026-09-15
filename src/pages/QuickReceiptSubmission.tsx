@@ -222,31 +222,58 @@ export default function QuickReceiptSubmission() {
   // وضعیت باز/بسته بودن راهنما
   const [guidelinesOpen, setGuidelinesOpen] = useState(true);
 
-  // جلوگیری از اسکرول خودکار مرورگر به پایین صفحه در هنگام رفرش و هدایت همیشگی به بالای صفحه
-  useEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
+  const pageTopRef = useRef<HTMLDivElement>(null);
+
+  // تابع تضمین‌کننده ماندن در بالای صفحه در تمام حالات رفرش، ثبت فیش و بارگذاری
+  const forceScrollTop = () => {
+    if (typeof window !== 'undefined') {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      if (pageTopRef.current) {
+        pageTopRef.current.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
     }
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    const timer = setTimeout(() => {
+  };
+
+  // جلوگیری کامل از اسکرول خودکار مرورگر به پایین صفحه در هنگام رفرش و هدایت قطعی به بالای صفحه
+  useEffect(() => {
+    forceScrollTop();
+    const handleBeforeUnload = () => {
       window.scrollTo(0, 0);
-    }, 60);
-    return () => clearTimeout(timer);
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    const t1 = setTimeout(forceScrollTop, 50);
+    const t2 = setTimeout(forceScrollTop, 150);
+    const t3 = setTimeout(forceScrollTop, 300);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
   }, []);
 
-  // هنگامی که فیش با موفقیت ثبت شد، صفحه بی‌درنگ به بالای صفحه منتقل شود تا کد رهگیری و پیام موفقیت کاملاً در دید باشد
+  // هنگامی که فیش با موفقیت ثبت شد یا مجدداً بارگذاری شد، صفحه حتماً در بالای صفحه قرار گیرد
   useEffect(() => {
     if (submittedReceipt) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      forceScrollTop();
       try {
         sessionStorage.setItem('kowsar_last_submitted_receipt', JSON.stringify(submittedReceipt));
       } catch {
         // ignore
       }
-      const timer = setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 50);
-      return () => clearTimeout(timer);
+      const t1 = setTimeout(forceScrollTop, 50);
+      const t2 = setTimeout(forceScrollTop, 150);
+      const t3 = setTimeout(forceScrollTop, 300);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
     }
   }, [submittedReceipt]);
 
@@ -509,6 +536,7 @@ export default function QuickReceiptSubmission() {
   return (
     <div className="min-h-screen bg-slate-50/60 pb-20 pt-4 md:pt-8 font-sans">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div ref={pageTopRef} id="receipt-page-top" className="scroll-mt-32" />
         
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
@@ -694,8 +722,8 @@ export default function QuickReceiptSubmission() {
               <>
                 {/* Official Bank Accounts Box */}
                 {config.showBankAccountsBox !== false && bankAccounts.length > 0 && (
-                  <div className="space-y-4">
-                    <div className={`flex items-center justify-between w-full ${bankAccounts.length === 1 ? 'max-w-[560px] lg:max-w-[620px] mx-auto' : ''}`}>
+                  <div className="space-y-4 flex flex-col items-center justify-center w-full">
+                    <div className={`flex items-center justify-between w-full ${bankAccounts.length === 1 ? 'max-w-[620px] lg:max-w-[690px] xl:max-w-[720px] mx-auto' : 'max-w-full'} px-1`}>
                       <h2 className="text-base sm:text-lg font-extrabold text-slate-800 flex items-center gap-2">
                         <CreditCard className="w-5 h-5 text-blue-600" />
                         <span>حساب‌های رسمی واریز وجه مرکز</span>
@@ -705,7 +733,7 @@ export default function QuickReceiptSubmission() {
                       </span>
                     </div>
 
-                    <div className={`w-full flex flex-wrap justify-center items-center gap-6 ${bankAccounts.length === 1 ? 'max-w-[560px] lg:max-w-[620px] mx-auto' : ''}`}>
+                    <div className={`w-full flex flex-wrap justify-center items-center gap-6 ${bankAccounts.length === 1 ? 'max-w-[620px] lg:max-w-[690px] xl:max-w-[720px] mx-auto' : 'mx-auto'}`}>
                       {bankAccounts.map((acc, index) => {
                         const rawCard = String(acc.cardNumber || '').replace(/\D/g, '');
                         const rawSheba = formatShebaDisplay(acc.shebaNumber);
@@ -716,7 +744,7 @@ export default function QuickReceiptSubmission() {
                         return (
                           <div 
                             key={acc.id || index}
-                            className={`group relative overflow-hidden rounded-[26px] p-6 sm:p-7 text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col justify-between min-h-[250px] border ${theme.bg} ${theme.border} w-full ${bankAccounts.length > 1 ? 'md:w-[calc(50%-12px)] md:max-w-[540px]' : 'w-full md:max-w-[560px] lg:max-w-[620px]'} mx-auto`}
+                            className={`group relative overflow-hidden rounded-[26px] p-6 sm:p-7 text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col justify-between min-h-[250px] border ${theme.bg} ${theme.border} w-full ${bankAccounts.length > 1 ? 'md:w-[calc(50%-14px)] md:max-w-[560px] lg:max-w-[620px]' : 'w-full md:max-w-[620px] lg:max-w-[690px] xl:max-w-[720px]'} mx-auto`}
                           >
                             {/* Watermark and glossy reflection */}
                             <div className="absolute -right-16 -top-16 w-52 h-52 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-500" />

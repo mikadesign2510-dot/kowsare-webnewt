@@ -53,8 +53,13 @@ export default function Presentation() {
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
+    window.scrollTo(0, 0);
+    const footer = document.querySelector('footer');
+    if (footer) footer.style.display = 'none';
+    
     return () => {
       document.body.style.overflow = 'auto';
+      if (footer) footer.style.display = '';
     };
   }, []);
 

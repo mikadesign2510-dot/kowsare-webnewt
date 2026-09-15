@@ -97,6 +97,8 @@ export default function App() {
     Promise.allSettled([
       storage.syncSettingsWithDB(),
       storage.syncPortalSettingsWithDB(),
+      storage.syncContactConfigWithDB(),
+      storage.syncAdminPanelConfigWithDB(),
       storage.syncBannersWithDB(),
       storage.syncNewsWithDB(),
       storage.syncPresentationWithDB()
@@ -108,8 +110,9 @@ export default function App() {
 
     // Cross-tab synchronization
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'kowsar_site_settings' || e.key === 'kowsar_portal_settings') {
+      if (e.key === 'kowsar_site_settings' || e.key === 'kowsar_portal_settings' || e.key === 'kowsar_contact_page_config') {
         window.dispatchEvent(new Event('kowsar_site_settings_changed'));
+        window.dispatchEvent(new CustomEvent('kowsar_contact_config_changed'));
       }
     };
     
