@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { storage, GalleryAlbum, GalleryImage } from '../lib/storage';
+import { setCustomPageTitle } from '../lib/pageTitleHelper';
 import { 
   Film, Video, Share2, Copy, Check, ArrowRight, ArrowLeft, 
   Calendar, Eye, Layers, Sparkles, ExternalLink, Download, 
@@ -93,6 +94,15 @@ export default function GalleryVideoDetail() {
 
     return { targetAlbum: null, targetVideo: null, videoIndex: -1 };
   }, [albums, albumId, videoId]);
+
+  useEffect(() => {
+    if (targetVideo || targetAlbum) {
+      const vTitle = targetVideo?.title || targetAlbum?.title;
+      if (vTitle) {
+        setCustomPageTitle(vTitle);
+      }
+    }
+  }, [targetVideo, targetAlbum]);
 
   // سایر ویدیوهای موجود در دانشگاه جهت پیشنهاد و تماشای بعدی
   const otherVideos = useMemo(() => {

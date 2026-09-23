@@ -801,6 +801,20 @@
         "role": "super_admin",
         "permissionsCount": 18
       }
+    },
+    {
+      "id": 1790147730472,
+      "created_at": "2026-09-23T07:15:30.472Z",
+      "updated_at": "2026-09-23T07:15:30.472Z",
+      "event_type": "SUCCESSFUL_LOGIN",
+      "ip_address": "169.254.169.126",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+      "details": {
+        "email": "elmi_admin",
+        "name": "مدیر اصلی سامانه",
+        "role": "super_admin",
+        "permissionsCount": 18
+      }
     }
   ],
   "uploaded_files": []

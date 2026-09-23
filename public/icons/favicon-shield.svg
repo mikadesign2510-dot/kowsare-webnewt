@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4338ca;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#312e81;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Shield Base -->
+  <path d="M50 14 Q78 14 82 32 C82 60 50 86 50 86 C50 86 18 60 18 32 Q22 14 50 14 Z" fill="url(#shieldGrad)" />
+  <path d="M50 20 Q72 20 76 34 C76 56 50 78 50 78 C50 78 24 56 24 34 Q28 20 50 20 Z" fill="none" stroke="url(#goldGrad)" stroke-width="2.5" />
+  <!-- Academic Laurel Star -->
+  <path d="M50 32 L53 42 L64 42 L55 49 L58 60 L50 53 L42 60 L45 49 L36 42 L47 42 Z" fill="url(#goldGrad)" />
+  <circle cx="50" cy="46" r="3" fill="#ffffff" />
+</svg>

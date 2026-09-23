@@ -33,7 +33,11 @@ import {
   AlertCircle,
   FileText,
   Copy,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Globe,
+  Sparkles,
+  RefreshCw,
+  Palette
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toPersianDigits, formatPersianDigitSeparators } from '../../lib/persianNumberHelper';
@@ -58,11 +62,14 @@ export default function AdminSettings() {
     }
   }, [location.search]);
 
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
+
   // Universal Cropper Modal State
   const [cropperModal, setCropperModal] = useState<{
     isOpen: boolean;
     imageSrc: string | File | null;
-    targetType: 'mainLogo' | 'higherEdLogo';
+    targetType: 'mainLogo' | 'higherEdLogo' | 'favicon';
     targetHigherEdId?: string;
     initialRatio?: number | null;
   }>({
@@ -75,7 +82,7 @@ export default function AdminSettings() {
   // Server Image Picker State
   const [serverPickerState, setServerPickerState] = useState<{
     isOpen: boolean;
-    targetType: 'mainLogo' | 'higherEdLogo';
+    targetType: 'mainLogo' | 'higherEdLogo' | 'favicon';
     targetHigherEdId?: string;
   }>({
     isOpen: false,
@@ -86,6 +93,8 @@ export default function AdminSettings() {
     const finalUrl = uploadResult?.url || previewUrl;
     if (cropperModal.targetType === 'mainLogo') {
       setSettings(prev => ({ ...prev, logoUrl: finalUrl }));
+    } else if (cropperModal.targetType === 'favicon') {
+      setSettings(prev => ({ ...prev, faviconUrl: finalUrl }));
     } else if (cropperModal.targetType === 'higherEdLogo' && cropperModal.targetHigherEdId) {
       updateHigherEdSystem(cropperModal.targetHigherEdId, 'logoUrl', finalUrl);
     }
@@ -151,6 +160,26 @@ export default function AdminSettings() {
       alert("خطا در ارتباط با سرور");
     } finally {
       setUploadingSysId(null);
+    }
+  };
+
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingFavicon(true);
+    try {
+      const result = await uploadFileToServer(file, 'settings');
+      if (result.success && result.url) {
+        setSettings({ ...settings, faviconUrl: result.url });
+      } else {
+        alert(result.message || 'خطا در بارگذاری آیکون تب مرورگر');
+      }
+    } catch (error) {
+      console.error('Favicon upload error:', error);
+      alert('خطا در ارتباط با سرور');
+    } finally {
+      setUploadingFavicon(false);
     }
   };
 
@@ -499,8 +528,8 @@ export default function AdminSettings() {
       {/* Tabs Menu */}
       <div className="flex overflow-x-auto gap-2 mb-8 pb-2 hide-scrollbar">
         <button type="button" onClick={() => setActiveTab('brand')} className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all ${activeTab === 'brand' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'}`}>
-          <ImageIcon className="w-4 h-4" />
-          لوگو و برند
+          <Globe className="w-4 h-4" />
+          عنوان تب مرورگر، برند و لوگو
         </button>
         <button type="button" onClick={() => setActiveTab('home')} className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all ${activeTab === 'home' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'}`}>
           <LayoutTemplate className="w-4 h-4" />
@@ -531,6 +560,393 @@ export default function AdminSettings() {
       <form onSubmit={handleSubmit} className="space-y-8 pb-12">
         {/* Logo & Brand Settings */}
         {activeTab === 'brand' && (
+        <div className="space-y-8">
+          {/* Browser Tab & Title Settings */}
+          <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2.5">
+                  <Globe className="w-5 h-5 text-blue-600" />
+                  <span>عنوان سایت در تب‌های مرورگر و سئو (Browser Tab Title)</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  نامی که در نوار بالای تب‌های مرورگر، بوکمارک‌ها، تاریخچه مرور و نتایج موتورهای جستجو نمایش داده می‌شود.
+                </p>
+              </div>
+              <span className="text-xs font-semibold px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full border border-indigo-100 self-start sm:self-auto flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                تب مرورگر و سئو
+              </span>
+            </div>
+
+            {/* Live Interactive Browser Tab Mockup */}
+            <div className="mb-8">
+              <label className="block text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
+                <Eye className="w-4 h-4 text-blue-500" />
+                <span>پیش‌نمایش زنده در نوار تب مرورگر:</span>
+              </label>
+
+              {/* Mock Browser Window Chrome */}
+              <div className="rounded-2xl border border-slate-300/80 bg-slate-100/90 shadow-sm overflow-hidden text-right" dir="ltr">
+                {/* Browser Tab Strip */}
+                <div className="bg-slate-200/90 px-3 pt-2.5 flex items-center gap-2 border-b border-slate-300/70">
+                  {/* Window Controls */}
+                  <div className="flex items-center gap-1.5 mr-2">
+                    <span className="w-3 h-3 rounded-full bg-rose-400 border border-rose-500/30 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-amber-400 border border-amber-500/30 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-emerald-400 border border-emerald-500/30 inline-block" />
+                  </div>
+
+                  {/* Active Tab */}
+                  <div className="bg-white rounded-t-xl px-3.5 py-2 flex items-center gap-2 border-t border-x border-slate-300/80 shadow-xs max-w-xs sm:max-w-md w-full transition-all" dir="rtl">
+                    <img 
+                      src={settings.faviconUrl || settings.logoUrl || '/favicon.svg'} 
+                      alt="Favicon" 
+                      className="w-4 h-4 rounded object-contain flex-shrink-0"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = '/favicon.svg';
+                      }}
+                    />
+                    <span className="text-xs font-bold text-slate-800 truncate flex-1 font-persian">
+                      {settings.browserTabTitle || 'دانشگاه جامع علمی کاربردی کوثر کاکی'}
+                    </span>
+                    <span className="text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-default text-[10px] leading-none">✕</span>
+                  </div>
+
+                  {/* New Tab Button */}
+                  <span className="text-slate-400 hover:text-slate-600 text-sm px-1.5 cursor-default font-bold">+</span>
+                </div>
+
+                {/* Browser Address Bar */}
+                <div className="bg-white px-3 py-2 flex items-center gap-2 border-b border-slate-200 text-xs text-slate-600 font-mono">
+                  <div className="flex items-center gap-1 text-slate-400">
+                    <span>←</span>
+                    <span>→</span>
+                    <RefreshCw className="w-3 h-3 text-slate-400 ml-1" />
+                  </div>
+                  <div className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1 flex items-center gap-2 text-slate-700 text-xs">
+                    <span className="text-emerald-600 font-bold">🔒 https://</span>
+                    <span className="text-slate-800 font-semibold">kowsarek.ir</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Inputs Grid */}
+            <div className="space-y-6">
+              {/* Field 1: Title */}
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Type className="w-4 h-4 text-blue-500" />
+                    عنوان سایت در تب مرورگر (Site Title)
+                  </span>
+                  <span className="text-xs font-normal text-slate-400">
+                    مستقیماً در تگ &lt;title&gt; و سربرگ مرورگر قرار می‌گیرد
+                  </span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={settings.browserTabTitle ?? 'دانشگاه جامع علمی کاربردی کوثر کاکی'}
+                    onChange={(e) => setSettings({ ...settings, browserTabTitle: e.target.value })}
+                    placeholder="مثال: مرکز آموزش علمی کاربردی کوثر کاکی"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                  />
+                </div>
+
+                {/* Quick Presets */}
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-medium text-slate-500">پیشنهادهای سریع:</span>
+                  {[
+                    'دانشگاه جامع علمی کاربردی کوثر کاکی',
+                    'مرکز آموزش علمی کاربردی کوثر کاکی',
+                    'پورتال مرکز آموزش علمی کاربردی کوثر کاکی',
+                    'دانشگاه کوثر کاکی'
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setSettings({ ...settings, browserTabTitle: preset })}
+                      className="text-xs font-bold bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 px-3 py-1 rounded-lg border border-slate-200/80 transition-all cursor-pointer"
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Field 2: Favicon (Browser Tab Icon) */}
+              <div className="pt-5 border-t border-slate-100">
+                <label className="block text-sm font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    آیکون کوچک تب مرورگر (Favicon)
+                  </span>
+                  <span className="text-xs font-normal text-slate-400">
+                    آیکونی که کنار نام سایت در تب مرورگر و بوکمارک‌ها دیده می‌شود
+                  </span>
+                </label>
+                <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                  می‌توانید تصویر آیکون کلاه پیش‌فرض را با آرم اختصاصی دانشگاه، لوگوی سازمانی یا هر تصویر مربع‌شکل دلخواه جایگزین نمایید.
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/90">
+                  {/* Current Favicon Preview */}
+                  <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
+                    <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center p-1.5 overflow-hidden">
+                      <img
+                        src={settings.faviconUrl || settings.logoUrl || '/favicon.svg'}
+                        alt="Favicon Preview"
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = '/favicon.svg';
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 block">نماد فعلی تب</span>
+                      <span className="text-[10px] text-slate-500 font-mono">
+                        {settings.faviconUrl ? 'آیکون اختصاصی' : settings.logoUrl ? 'برگرفته از لوگوی سایت' : 'کلاه فارغ‌التحصیلی (پیش‌فرض)'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Upload & Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-2 flex-1">
+                    <input
+                      type="file"
+                      accept="image/png, image/jpeg, image/svg+xml, image/webp, image/x-icon"
+                      className="hidden"
+                      ref={faviconInputRef}
+                      onChange={handleFaviconUpload}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setServerPickerState({ isOpen: true, targetType: 'favicon' })}
+                      className="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl font-bold transition-all shadow-xs flex items-center gap-1.5 text-xs cursor-pointer"
+                    >
+                      <HardDrive className="w-3.5 h-3.5 text-blue-400" />
+                      <span>مخزن سرور</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => faviconInputRef.current?.click()}
+                      disabled={uploadingFavicon}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-xs flex items-center gap-1.5 text-xs disabled:opacity-50 cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      {uploadingFavicon ? 'در حال بارگذاری...' : 'آپلود فایل جدید'}
+                    </button>
+
+                    {settings.logoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setSettings({ ...settings, faviconUrl: settings.logoUrl })}
+                        className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3.5 py-2 rounded-xl font-bold transition-colors text-xs border border-emerald-200 flex items-center gap-1.5 cursor-pointer"
+                        title="استفاده از لوگوی بارگذاری شده دانشگاه برای تب مرورگر"
+                      >
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>همانند لوگوی دانشگاه</span>
+                      </button>
+                    )}
+
+                    {(settings.faviconUrl || settings.logoUrl) && (
+                      <button
+                        type="button"
+                        onClick={() => setCropperModal({
+                          isOpen: true,
+                          imageSrc: settings.faviconUrl || settings.logoUrl || null,
+                          targetType: 'favicon',
+                          initialRatio: 1
+                        })}
+                        className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-2 rounded-xl font-bold transition-colors text-xs border border-indigo-200 flex items-center gap-1.5 cursor-pointer"
+                        title="برش ۱:۱ دقیق برای آیکون تب"
+                      >
+                        <Crop className="w-3.5 h-3.5" />
+                        برش مربع (۱:۱)
+                      </button>
+                    )}
+
+                    {settings.faviconUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setSettings({ ...settings, faviconUrl: undefined })}
+                        className="text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-xl font-bold transition-colors text-xs border border-rose-200 cursor-pointer"
+                        title="بازگشت به آیکون پیش‌فرض کلاه"
+                      >
+                        بازگشت به پیش‌فرض
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Built-in Preset Vector Favicons */}
+                <div className="mt-4 pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                      <Palette className="w-3.5 h-3.5 text-blue-500" />
+                      انتخاب سریع از نمونه‌های آماده وکتوری و لوگوی استاندارد دانشگاهی:
+                    </span>
+                    <span className="text-[11px] text-slate-400">با یک کلیک انتخاب می‌شود</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+                    {[
+                      {
+                        id: 'default-cap',
+                        title: 'کلاه دانشگاهی',
+                        sub: 'پیش‌فرض سایت',
+                        url: '/favicon.svg'
+                      },
+                      {
+                        id: 'uast-building',
+                        title: 'عمارت دانشگاهی',
+                        sub: 'نماد آموزش عالی',
+                        url: '/icons/favicon-uast.svg'
+                      },
+                      {
+                        id: 'kowsar-monogram',
+                        title: 'لوگو کوثر کاکی',
+                        sub: 'مونوگرام بال و پر',
+                        url: '/icons/favicon-kowsar.svg'
+                      },
+                      {
+                        id: 'open-book',
+                        title: 'کتاب و مشعل دانش',
+                        sub: 'نماد پژوهش و علم',
+                        url: '/icons/favicon-book.svg'
+                      },
+                      {
+                        id: 'shield-star',
+                        title: 'سپر افتخار و ستاره',
+                        sub: 'نشان طلایی دانشگاه',
+                        url: '/icons/favicon-shield.svg'
+                      },
+                      {
+                        id: 'science-tech',
+                        title: 'فناوری و مهارت',
+                        sub: 'علمی کاربردی نوین',
+                        url: '/icons/favicon-science.svg'
+                      }
+                    ].map((preset) => {
+                      const isSelected = (settings.faviconUrl === preset.url) || (!settings.faviconUrl && preset.url === '/favicon.svg');
+                      return (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => setSettings({ ...settings, faviconUrl: preset.url })}
+                          className={`p-2.5 rounded-xl border text-right transition-all flex items-center gap-2.5 cursor-pointer relative group ${
+                            isSelected
+                              ? 'bg-blue-50/90 border-blue-500 ring-2 ring-blue-500/30 shadow-xs'
+                              : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200/80 p-1 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                            <img
+                              src={preset.url}
+                              alt={preset.title}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[11px] font-bold text-slate-800 truncate flex items-center gap-1">
+                              <span>{preset.title}</span>
+                              {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block mr-auto"></span>}
+                            </div>
+                            <div className="text-[9px] text-slate-400 truncate">{preset.sub}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Field 3: Tab Title Format for Internal Pages */}
+              <div className="pt-2 border-t border-slate-100">
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4 text-blue-500" />
+                  نحوه نمایش عنوان در صفحات داخلی (صفحه اخبار، فرم‌ها، پذیرش و...)
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {/* Format 1: page_site */}
+                  <label 
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                      (settings.browserTabFormat || 'page_site') === 'page_site'
+                        ? 'bg-blue-50/80 border-blue-400 ring-2 ring-blue-500/20 shadow-xs'
+                        : 'bg-slate-50 hover:bg-white border-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <input 
+                        type="radio" 
+                        name="browserTabFormat"
+                        value="page_site"
+                        checked={(settings.browserTabFormat || 'page_site') === 'page_site'}
+                        onChange={() => setSettings({ ...settings, browserTabFormat: 'page_site' })}
+                        className="text-blue-600 focus:ring-blue-500 w-4 h-4"
+                      />
+                      <span className="text-xs font-bold text-slate-800">نام صفحه | نام سایت</span>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold mr-auto">بهترین سئو</span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 bg-white/80 p-2 rounded-xl border border-slate-200/60 font-medium">
+                      پیش‌نمایش: <span className="font-bold text-slate-700">اخبار و اطلاعیه‌ها | {settings.browserTabTitle || 'دانشگاه جامع علمی کاربردی کوثر کاکی'}</span>
+                    </div>
+                  </label>
+
+                  {/* Format 2: site_page */}
+                  <label 
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                      settings.browserTabFormat === 'site_page'
+                        ? 'bg-blue-50/80 border-blue-400 ring-2 ring-blue-500/20 shadow-xs'
+                        : 'bg-slate-50 hover:bg-white border-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <input 
+                        type="radio" 
+                        name="browserTabFormat"
+                        value="site_page"
+                        checked={settings.browserTabFormat === 'site_page'}
+                        onChange={() => setSettings({ ...settings, browserTabFormat: 'site_page' })}
+                        className="text-blue-600 focus:ring-blue-500 w-4 h-4"
+                      />
+                      <span className="text-xs font-bold text-slate-800">نام سایت - نام صفحه</span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 bg-white/80 p-2 rounded-xl border border-slate-200/60 font-medium">
+                      پیش‌نمایش: <span className="font-bold text-slate-700">{settings.browserTabTitle || 'دانشگاه جامع علمی کاربردی کوثر کاکی'} - اخبار و اطلاعیه‌ها</span>
+                    </div>
+                  </label>
+
+                  {/* Format 3: site_only */}
+                  <label 
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                      settings.browserTabFormat === 'site_only'
+                        ? 'bg-blue-50/80 border-blue-400 ring-2 ring-blue-500/20 shadow-xs'
+                        : 'bg-slate-50 hover:bg-white border-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <input 
+                        type="radio" 
+                        name="browserTabFormat"
+                        value="site_only"
+                        checked={settings.browserTabFormat === 'site_only'}
+                        onChange={() => setSettings({ ...settings, browserTabFormat: 'site_only' })}
+                        className="text-blue-600 focus:ring-blue-500 w-4 h-4"
+                      />
+                      <span className="text-xs font-bold text-slate-800">فقط نام سایت در همه صفحات</span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 bg-white/80 p-2 rounded-xl border border-slate-200/60 font-medium">
+                      پیش‌نمایش: <span className="font-bold text-slate-700">{settings.browserTabTitle || 'دانشگاه جامع علمی کاربردی کوثر کاکی'}</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -688,6 +1104,7 @@ export default function AdminSettings() {
               </span>
             </div>
           </div>
+        </div>
         </div>
         )}
 
@@ -2269,6 +2686,8 @@ export default function AdminSettings() {
         title={
           cropperModal.targetType === 'mainLogo' 
             ? 'برش و تنظیم ابعاد لوگوی اصلی دانشگاه' 
+            : cropperModal.targetType === 'favicon'
+            ? 'برش و کادربندی آیکون تب مرورگر (Favicon)'
             : 'برش و کادربندی لوگوی سامانه آموزش عالی'
         }
         targetFolder="settings"
@@ -2282,6 +2701,8 @@ export default function AdminSettings() {
         onSelect={(imgUrl) => {
           if (serverPickerState.targetType === 'mainLogo') {
             setSettings(prev => ({ ...prev, logoUrl: imgUrl }));
+          } else if (serverPickerState.targetType === 'favicon') {
+            setSettings(prev => ({ ...prev, faviconUrl: imgUrl }));
           } else if (serverPickerState.targetType === 'higherEdLogo' && serverPickerState.targetHigherEdId) {
             updateHigherEdSystem(serverPickerState.targetHigherEdId, 'logoUrl', imgUrl);
           }
@@ -2291,6 +2712,8 @@ export default function AdminSettings() {
         title={
           serverPickerState.targetType === 'mainLogo'
             ? 'انتخاب لوگوی دانشگاه از مخزن سرور'
+            : serverPickerState.targetType === 'favicon'
+            ? 'انتخاب آیکون تب مرورگر از مخزن سرور'
             : 'انتخاب لوگوی سامانه آموزش عالی از مخزن سرور'
         }
       />

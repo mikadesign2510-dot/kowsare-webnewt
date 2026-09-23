@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { storage, NewsItem } from '../lib/storage';
+import { setCustomPageTitle } from '../lib/pageTitleHelper';
 import { 
   Calendar, ArrowRight, Share2, Tag, Eye, Clock, 
   User, Check, Download, FileText, Sparkles, ChevronLeft, 
@@ -31,6 +32,7 @@ export default function NewsDetail() {
     const item = published.find((n) => n.id === Number(id)) || storage.getNews().find((n) => n.id === Number(id));
     if (item) {
       setNewsItem(item);
+      setCustomPageTitle(item.title);
       storage.incrementNewsViews(item.id);
       
       const album = storage.getAlbums().find((a) => a.newsId === item.id);

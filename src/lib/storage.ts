@@ -298,6 +298,9 @@ export const defaultQuickReceiptConfig: QuickReceiptConfig = {
 };
 
 export interface SiteSettings {
+  browserTabTitle?: string;
+  browserTabFormat?: 'page_site' | 'site_page' | 'site_only';
+  faviconUrl?: string;
   logoUrl?: string;
   logoTitle?: string;
   logoSubtitle?: string;
@@ -990,6 +993,9 @@ export const defaultFeatures: FeatureItem[] = [
 ];
 
 const defaultSettings: SiteSettings = {
+  browserTabTitle: 'دانشگاه جامع علمی کاربردی کوثر کاکی',
+  browserTabFormat: 'page_site',
+  faviconUrl: '/favicon.svg',
   logoTitle: 'علمی کاربردی',
   logoSubtitle: 'کوثر کاکی',
   showLogoText: true,
@@ -1550,6 +1556,9 @@ export const storage = {
       return {
         ...defaultSettings,
         ...parsed,
+        browserTabTitle: parsed.browserTabTitle !== undefined ? parsed.browserTabTitle : defaultSettings.browserTabTitle,
+        browserTabFormat: parsed.browserTabFormat || defaultSettings.browserTabFormat,
+        faviconUrl: parsed.faviconUrl !== undefined ? parsed.faviconUrl : defaultSettings.faviconUrl,
         enableStudentPortalButton: enableStudentPortal,
         enableQuickReceiptButton: enableQuickReceipt,
         quickReceiptButtonLabel: parsed.quickReceiptButtonLabel || defaultSettings.quickReceiptButtonLabel,

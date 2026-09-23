@@ -46,6 +46,8 @@ const Presentation = lazyRetry(() => import('./pages/Presentation'));
 const Contact = lazyRetry(() => import('./pages/Contact'));
 const QuickReceiptSubmission = lazyRetry(() => import('./pages/QuickReceiptSubmission'));
 
+import PageTitleManager from './components/PageTitleManager';
+
 function ScrollToTop() {
   const { pathname } = useLocation();
 
@@ -126,6 +128,7 @@ export default function App() {
   return (
     <Router>
       <ScrollToTop />
+      <PageTitleManager />
       
       <Routes>
         <Route path="/admin/login" element={<AdminLogin />} />
